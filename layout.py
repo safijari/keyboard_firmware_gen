@@ -71,15 +71,66 @@ KEY_F23
 KEY_F24
 """
 
-layout = {
+layout_left = {
     1: {
-        1: "`",
-        2: "=",
-        3: "-",
-        4: "0",
-        5: "9",
-        6: "8",
-        7: "7",
+        1: "=",
+        2: "1",
+        3: "2",
+        4: "3",
+        5: "4",
+        6: "5",
+        7: "KEY_PAGE_DOWN"
+        },
+    2: {
+        1: "KEY_TAB",
+        2: "q",
+        3: 'w',
+        4: 'e',
+        5: 'r',
+        6: 't',
+        7: '[',
+    },
+    3: {
+        1: "KEY_LEFT_GUI",
+        2: "a",
+        3: 's',
+        4: 'd',
+        5: 'f',
+        6: 'g',
+        7: 'KEY_HOME',
+    },
+    4: {
+        1: "KEY_LEFT_SHIFT",
+        2: "z",
+        3: 'x',
+        4: 'c',
+        5: 'v',
+        6: 'b',
+    },
+    5: {
+        2: "KEY_LEFT_ALT",
+        2: " ",
+        5: "KEY_BACKSPACE",
+        6: "KEY_ESC",
+        7: "KEY_LEFT_CTRL",
+        3: "KEY_LEFT_ARROW",
+        4: "KEY_RIGHT_ARROW",
+    },
+    6: {
+        2: "KEY_DELETE",
+        7: "`",
+    },
+}
+
+layout_right = {
+    1: {
+        1: "-",
+        2: "0",
+        3: "9",
+        4: "8",
+        5: "7",
+        6: "6",
+        7: "KEY_PAGE_UP"
         },
     2: {
         1: "\\",
@@ -91,15 +142,16 @@ layout = {
         7: ']',
     },
     3: {
-        1: "KEY_RIGHT_SHIFT",
-        2: "'",
+        1: "'",
+        2: ";",
         3: 'l',
         4: 'k',
         5: 'j',
         6: 'h',
-        #7: 'h',
+        7: 'KEY_END',
     },
     4: {
+        1: "KEY_RIGHT_SHIFT",
         2: "/",
         3: '.',
         4: ',',
@@ -107,13 +159,15 @@ layout = {
         6: 'n',
     },
     5: {
-        2: "KEY_ESC",
+        2: "KEY_RIGHT_ALT",
+        5: " ",
+        6: "KEY_RETURN",
+        7: "KEY_RIGHT_CTRL",
         3: "KEY_UP_ARROW",
         4: "KEY_DOWN_ARROW",
-        5: ' ',
-        6: 'KEY_RETURN',
     },
-    6: {
-        2: "KEY_RIGHT_ALT",
-    },
+    #6: {
+    #    2: "KEY_RIGHT_ALT",
+    #    7: 'KEY_RETURN',
+    #},
 }

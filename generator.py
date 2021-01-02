@@ -1,6 +1,8 @@
 from layout import row_pin_map, col_pin_map, layout
 from snippets import preamble, functions
 
+debug = True
+
 def row(row_num):
     return f"ROW_{row_num}_OUT"
 
@@ -13,6 +15,8 @@ def down(row, col):
 code = ""
 
 code += preamble + "\n"
+
+code += f"#define DEBUG {int(debug)}\n"
 
 for row_num, pin in row_pin_map.items():
     code += f"#define {row(row_num)} {pin}\n"
@@ -50,7 +54,7 @@ for row_num, cols in layout.items():
 
         if len(mapped_key) == 1:
             mapped_key = f"'{mapped_key}'"
-        code += f"  check_key({col(col_num)}, {down(row_num, col_num)}, {mapped_key});\n"
+        code += f"  check_key({col(col_num)}, {down(row_num, col_num)}, {mapped_key}, {row_num}, {col_num});\n"
     code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
 code += "}"
