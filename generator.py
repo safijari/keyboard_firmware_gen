@@ -1,4 +1,4 @@
-from layout import row_pin_map, col_pin_map, layout_left, layout_right
+from layout import row_pin_map, col_pin_map, layout_left, layout_right, layers_right, layers_left
 from snippets import preamble, functions
 
 debug = False
@@ -12,7 +12,7 @@ def col(col_num):
 def down(row, col):
     return f"d_{row}{col}"
 
-def generate_code(layout):
+def generate_code(layout, layers):
 
     code = ""
 
@@ -33,8 +33,8 @@ def generate_code(layout):
             code += f"int {down(row_num, col_num)} = 0;\n"
 
     code += """
-    void setup() {
-    """
+void setup() {
+    \n"""
 
     for row_num in row_pin_map:
         code += f"  setup_output({row(row_num)});\n"
@@ -42,13 +42,25 @@ def generate_code(layout):
     for col_num in col_pin_map:
         code += f"  setup_input({col(col_num)});\n"
 
-    code += "  Keyboard.begin();\n  delay(1000);\n}"
+    code += "  Keyboard.begin();\n delay(300);\n}"
 
-    code += """void loop() {
+    code += """\nvoid loop() {
+    char to_check;
     """
 
+    lnames = list(layers.keys())
+
+    for ln in lnames:
+        code += f"int layer_{ln}_down = 0;\n"
+        r, c = layers[ln]["key"]
+        code += f"""
+    if (check_key_down({row_pin_map[r]}, {col_pin_map[c]})) {{
+        layer_{ln}_down = 1;
+    }}
+        """
+
     for row_num, cols in layout.items():
-        code += f"  digitalWrite({row(row_num)}, LOW);\n"
+        code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
         for col_num, mapped_key in cols.items():
             if mapped_key in ["\'", "\\"]:
                 mapped_key = "\\" + mapped_key
@@ -56,17 +68,27 @@ def generate_code(layout):
 
             if len(mapped_key) == 1:
                 mapped_key = f"'{mapped_key}'"
-            code += f"  check_key({col(col_num)}, {down(row_num, col_num)}, {mapped_key}, {row_num}, {col_num});\n"
+            code += f"  to_check = {mapped_key};\n"
+            for ln in lnames:
+                new_key = layers[ln].get(row_num, {}).get(col_num, None)
+                if not new_key:
+                    continue
+                code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
+            code += f"  check_key({col(col_num)}, {down(row_num, col_num)}, to_check, {row_num}, {col_num});\n\n"
+
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
-    code += "}"
+    code += """
+    """
+
+    code += "\n}"
 
     return code
 
 
 if __name__ == "__main__":
     with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_left/dactyl_left.ino", "w") as ff:
-        ff.write(generate_code(layout_left))
+        ff.write(generate_code(layout_left, layers_left))
 
     with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_right/dactyl_right.ino", "w") as ff:
-        ff.write(generate_code(layout_right))
+        ff.write(generate_code(layout_right, layers_right))

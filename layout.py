@@ -166,8 +166,32 @@ layout_right = {
         3: "KEY_UP_ARROW",
         4: "KEY_DOWN_ARROW",
     },
-    #6: {
-    #    2: "KEY_RIGHT_ALT",
-    #    7: 'KEY_RETURN',
-    #},
+    # 6: {
+    #     #2: "KEY_RIGHT_ALT",
+    #     7: "LAYER_FN",
+    # },
 }
+
+layers_right = {
+    "FN": {
+        "key": [6, 7],
+        1: {
+            1: "KEY_F7",
+            2: "KEY_F6",
+            3: "KEY_F5",
+            4: "KEY_F4",
+            5: "KEY_F3",
+            6: "KEY_F2",
+            7: "KEY_F1"
+            },
+        2: {
+            3: "KEY_F12",
+            4: "KEY_F11",
+            5: "KEY_F10",
+            6: "KEY_F9",
+            7: "KEY_F8",
+        },
+    }
+}
+
+layers_left = {}
