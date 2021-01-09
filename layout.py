@@ -109,7 +109,6 @@ layout_left = {
     },
     5: {
         2: "KEY_LEFT_ALT",
-        2: " ",
         5: "KEY_BACKSPACE",
         6: "KEY_ESC",
         7: "KEY_LEFT_CTRL",

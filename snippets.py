@@ -39,4 +39,15 @@ void check_key(int pin, int & flag, char ch, int row, int column) {
       Keyboard.release(ch);
     }
 }
+
+void check_key_state(int pin, char & flag) {
+  if (digitalRead(pin) == LOW) {
+      if (flag == '0') {
+        flag = '1';
+      }
+  }
+  else {
+    flag = '0';
+  }
+}
 """

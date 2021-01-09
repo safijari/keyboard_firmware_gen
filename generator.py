@@ -1,16 +1,9 @@
 from layout import row_pin_map, col_pin_map, layout_left, layout_right, layers_right, layers_left
 from snippets import preamble, functions
+from seconday import generate_code_secondary
+from helpers import *
 
 debug = False
-
-def row(row_num):
-    return f"ROW_{row_num}_OUT"
-
-def col(col_num):
-    return f"COLUMN_{col_num}_IN"
-
-def down(row, col):
-    return f"d_{row}{col}"
 
 def generate_code(layout, layers):
 
@@ -86,9 +79,12 @@ void setup() {
     return code
 
 
-if __name__ == "__main__":
-    with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_left/dactyl_left.ino", "w") as ff:
-        ff.write(generate_code(layout_left, layers_left))
+# if __name__ == "__main__":
+#     with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_left/dactyl_left.ino", "w") as ff:
+#         ff.write(generate_code(layout_left, layers_left))
 
-    with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_right/dactyl_right.ino", "w") as ff:
-        ff.write(generate_code(layout_right, layers_right))
+#     with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_right/dactyl_right.ino", "w") as ff:
+#         ff.write(generate_code(layout_right, layers_right))
+
+with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_left/dactyl_left.ino", "w") as ff:
+    ff.write(generate_code_secondary(layout_left, layers_left))
