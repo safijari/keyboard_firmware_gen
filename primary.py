@@ -1,12 +1,12 @@
+
+from helpers import *
 from layout import row_pin_map, col_pin_map, layout_left, layout_right, layers_right, layers_left
 from snippets import preamble, functions
-from seconday import generate_code_secondary
-from primary import generate_code_primary
-from helpers import *
 
 debug = False
+nl = '\\n'
 
-def generate_code(layout, layers):
+def generate_code_primary(layout, layout_secondary, layers):
 
     code = ""
 
@@ -22,12 +22,17 @@ def generate_code(layout, layers):
 
     code += functions + "\n"
 
-    for row_num, cols in layout.items():
-        for col_num in cols:
-            code += f"int {down(row_num, col_num)} = 0;\n"
+    num_keys, row_col_to_state_idx = make_state_map(layout)
+    num_keys_sec, row_col_to_state_idx_sec = make_state_map(layout_secondary)
+
+    code += f"""char state[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
+    # code += f"""char state_sec[] = {{ {','.join(["'0'"]*num_keys_sec)} }};\n"""
+    code += """char state_sec[100];\n"""
 
     code += """
 void setup() {
+    Serial1.begin(115200);
+    Serial.begin(115200);
     \n"""
 
     for row_num in row_pin_map:
@@ -40,7 +45,23 @@ void setup() {
 
     code += """\nvoid loop() {
     char to_check;
+    Serial.println(millis());
     """
+
+    code += f"""
+    if (Serial1.available()) {{
+        int tots = Serial1.readBytesUntil('{nl}', state_sec, {num_keys_sec} + 10);
+        if (tots == {num_keys_sec}) {{
+            Serial.println(tots);
+            Serial.write(state_sec, tots);
+            Serial.println();
+        }}
+        else {{
+            Serial.println("miss");
+        }}
+    }}
+    """
+
 
     lnames = list(layers.keys())
 
@@ -68,27 +89,10 @@ void setup() {
                 if not new_key:
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            code += f"  check_key({col(col_num)}, {down(row_num, col_num)}, to_check, {row_num}, {col_num});\n\n"
+            code += f"  check_key({col(col_num)}, state[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, {row_num}, {col_num});\n\n"
 
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
-
-    code += """
-    """
 
     code += "\n}"
 
     return code
-
-
-# if __name__ == "__main__":
-#     with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_left/dactyl_left.ino", "w") as ff:
-#         ff.write(generate_code(layout_left, layers_left))
-
-#     with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_right/dactyl_right.ino", "w") as ff:
-#         ff.write(generate_code(layout_right, layers_right))
-
-with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_left/dactyl_left.ino", "w") as ff:
-    ff.write(generate_code_secondary(layout_left))
-
-with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_right/dactyl_right.ino", "w") as ff:
-    ff.write(generate_code_primary(layout_right, layout_left, layers_right))

@@ -4,7 +4,7 @@ from snippets import preamble, functions
 
 debug = False
 
-def generate_code_secondary(layout, layers):
+def generate_code_secondary(layout):
     code = ""
     code += preamble + "\n"
     code += f"#define DEBUG {int(debug)}\n"
@@ -17,16 +17,9 @@ def generate_code_secondary(layout, layers):
 
     code += functions + "\n"
 
-    num_keys = 0
-    state_idx_to_row_col = {}
-    for row_num, cols in layout.items():
-        for col_num in cols:
-            state_idx_to_row_col[num_keys] = [row_num, col_num]
-            num_keys += 1
+    num_keys, row_col_to_state_idx = make_state_map(layout)
 
-    row_col_to_state_idx = {rckey(*v): k for k, v in state_idx_to_row_col.items()}
-
-    code += f"""char state[] = {{ {','.join(["'1'"]*num_keys)}"""
+    code += f"""char state[] = {{ {','.join(["'0'"]*num_keys)}"""
     code += """, '\\n'};\n"""
 
     code += """
@@ -48,24 +41,6 @@ void setup() {
     Serial1.write(state, {num_keys + 1});
     Serial.write(state, {num_keys + 1});
     """
-
-    lnames = list(layers.keys())
-
-    for ln in lnames:
-        code += f"int layer_{ln}_down = 0;\n"
-        r, c = layers[ln]["key"]
-        code += f"""
-    if (check_key_down({row_pin_map[r]}, {col_pin_map[c]})) {{
-        layer_{ln}_down = 1;
-    }}
-        """
-
-    for row_num, cols in layout.items():
-        code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
-        for col_num, _ in cols.items():
-            code += f"  check_key_state({col(col_num)}, state[{row_col_to_state_idx[rckey(row_num, col_num)]}]);\n"
-
-        code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
     code += f"""
     Serial.println(millis());
