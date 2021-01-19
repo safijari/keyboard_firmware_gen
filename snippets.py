@@ -35,8 +35,10 @@ void check_key(int pin, int & flag, char ch, int row, int column) {
       }
     }
     else {
-      flag = 0;
-      Keyboard.release(ch);
+      if (flag == 1) {
+        flag = 0;
+        Keyboard.release(ch);
+      }
     }
 }
 """

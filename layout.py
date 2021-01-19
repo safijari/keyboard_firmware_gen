@@ -4,7 +4,9 @@ row_pin_map = {
     3: 7,
     4: 6,
     5: 5,
-    6: 3
+    6: 4,
+    7: 3,
+    8: 2,
 }
 
 col_pin_map = {
@@ -14,7 +16,6 @@ col_pin_map = {
     4: 15,
     5: "A0",
     6: "A1",
-    7: "A2"
 }
 
 """
@@ -79,7 +80,6 @@ layout_left = {
         4: "3",
         5: "4",
         6: "5",
-        7: "KEY_PAGE_DOWN"
         },
     2: {
         1: "KEY_TAB",
@@ -88,7 +88,6 @@ layout_left = {
         4: 'e',
         5: 'r',
         6: 't',
-        7: '[',
     },
     3: {
         1: "KEY_LEFT_GUI",
@@ -97,7 +96,6 @@ layout_left = {
         4: 'd',
         5: 'f',
         6: 'g',
-        7: 'KEY_HOME',
     },
     4: {
         1: "KEY_LEFT_SHIFT",
@@ -108,17 +106,22 @@ layout_left = {
         6: 'b',
     },
     5: {
-        2: "KEY_LEFT_ALT",
-        2: " ",
-        5: "KEY_BACKSPACE",
+        2: "`",
         6: "KEY_ESC",
-        7: "KEY_LEFT_CTRL",
-        3: "KEY_LEFT_ARROW",
-        4: "KEY_RIGHT_ARROW",
+        4: "KEY_LEFT_ARROW",
+        5: "KEY_RIGHT_ARROW",
     },
     6: {
-        2: "KEY_DELETE",
-        7: "`",
+        5: "KEY_BACKSPACE",
+        6: "KEY_LEFT_CTRL",
+    },
+    7: {
+        5: "KEY_ESC",
+        6: "KEY_LEFT_GUI",
+    },
+    8: {
+        5: "KEY_END",
+        6: "KEY_LEFT_ALT",
     },
 }
 
@@ -130,7 +133,6 @@ layout_right = {
         4: "8",
         5: "7",
         6: "6",
-        7: "KEY_PAGE_UP"
         },
     2: {
         1: "\\",
@@ -139,7 +141,6 @@ layout_right = {
         4: 'i',
         5: 'u',
         6: 'y',
-        7: ']',
     },
     3: {
         1: "'",
@@ -148,7 +149,6 @@ layout_right = {
         4: 'k',
         5: 'j',
         6: 'h',
-        7: 'KEY_END',
     },
     4: {
         1: "KEY_RIGHT_SHIFT",
@@ -159,17 +159,23 @@ layout_right = {
         6: 'n',
     },
     5: {
-        2: "KEY_RIGHT_ALT",
-        5: " ",
-        6: "KEY_RETURN",
-        7: "KEY_RIGHT_CTRL",
-        3: "KEY_UP_ARROW",
-        4: "KEY_DOWN_ARROW",
+        2: "]",
+        3: "[",
+        4: "KEY_UP_ARROW",
+        5: "KEY_DOWN_ARROW",
     },
-    # 6: {
-    #     #2: "KEY_RIGHT_ALT",
-    #     7: "LAYER_FN",
-    # },
+    6: {
+        5: " ",
+        6: "KEY_RIGHT_CTRL",
+    },
+    7: {
+        5: "KEY_RETURN",
+        6: "KEY_RIGHT_GUI",
+    },
+    8: {
+        5: "KEY_END",
+        6: "KEY_RIGHT_ALT",
+    },
 }
 
 layers_right = {
@@ -195,3 +201,4 @@ layers_right = {
 }
 
 layers_left = {}
+layers_right = {}
