@@ -106,6 +106,7 @@ layout_left = {
         6: 'b',
     },
     5: {
+        1: "MOUSE_LEFT",
         2: "`",
         6: "KEY_ESC",
         4: "KEY_LEFT_ARROW",
