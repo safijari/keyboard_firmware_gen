@@ -77,16 +77,10 @@ layout_left = {
     2: {1: "KEY_TAB", 2: "q", 3: "w", 4: "e", 5: "r", 6: "t",},
     3: {1: "KEY_LEFT_GUI", 2: "a", 3: "s", 4: "d", 5: "f", 6: "g",},
     4: {1: "KEY_LEFT_SHIFT", 2: "z", 3: "x", 4: "c", 5: "v", 6: "b",},
-    5: {
-        1: "LAYER",
-        2: "`",
-        3: "KEY_LEFT_GUI",
-        4: "NO_OP",
-        5: "NO_OP",
-    },
+    5: {1: "LAYER", 2: "`", 3: "KEY_LEFT_GUI", 4: "NO_OP", 5: "NO_OP",},
     6: {5: "KEY_BACKSPACE", 6: "KEY_LEFT_CTRL",},
     7: {5: "KEY_ESC", 6: "KEY_LEFT_GUI",},
-    8: {5: "KEY_END", 6: "KEY_LEFT_ALT",},
+    8: {5: "LAYER", 6: "KEY_LEFT_ALT",},
 }
 
 layout_right = {
@@ -101,16 +95,18 @@ layout_right = {
 }
 
 layers = {
-    "FN": {
+    "NAV": {
         "key": {"half": "left", "key": [5, 1]},
         "map_right": {
-        3: {
-            6: "KEY_LEFT_ARROW",
-            5: "KEY_DOWN_ARROW",
-            4: "KEY_UP_ARROW",
-            3: "KEY_RIGHT_ARROW",
+            2: {3: "KEY_END", 4: "KEY_PAGE_UP", 5: "KEY_HOME"},
+            3: {
+                6: "KEY_LEFT_ARROW",
+                5: "KEY_DOWN_ARROW",
+                4: "KEY_UP_ARROW",
+                3: "KEY_RIGHT_ARROW",
+            },
+            4: {4: "KEY_PAGE_DOWN"},
         },
-        },
-        "map_left": {}
+        "map_left": {},
     }
 }
