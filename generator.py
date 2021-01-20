@@ -25,7 +25,7 @@ def generate_code(layout, layers):
 
     for row_num, cols in layout.items():
         for col_num in cols:
-            code += f"int {down(row_num, col_num)} = 0;\n"
+            code += f"char {down(row_num, col_num)} = '0';\n"
 
     code += """
 void setup() {
@@ -99,3 +99,5 @@ if __name__ == "__main__":
 
     with open("/tmp/dactyl_right/dactyl_right.ino", "w") as ff:
         ff.write(generate_code_primary(layout_right, layout_left, layers_right))
+    # with open("/tmp/dactyl_right/dactyl_right.ino", "w") as ff:
+    #     ff.write(generate_code(layout_right, layers_right))

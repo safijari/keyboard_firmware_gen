@@ -111,7 +111,6 @@ layout_left = {
         3: "KEY_LEFT_GUI",
         4: "KEY_LEFT_ARROW",
         5: "KEY_RIGHT_ARROW",
-        6: "KEY_ESC",
     },
     6: {
         5: "KEY_BACKSPACE",
@@ -161,6 +160,7 @@ layout_right = {
         6: 'n',
     },
     5: {
+        1: "KEY_RIGHT_GUI",
         2: "]",
         3: "[",
         4: "KEY_UP_ARROW",

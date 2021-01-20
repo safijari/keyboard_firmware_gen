@@ -40,7 +40,7 @@ void setup() {
     for col_num in col_pin_map:
         code += f"  setup_input({col(col_num)});\n"
 
-    code += "  Keyboard.begin();\n delay(300);\n}"
+    code += "  Keyboard.begin();\n delay(1300);\n}"
 
     code += """\nvoid loop() {
     bool process_seconday = false;
