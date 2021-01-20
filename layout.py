@@ -73,134 +73,44 @@ KEY_F24
 """
 
 layout_left = {
-    1: {
-        1: "=",
-        2: "1",
-        3: "2",
-        4: "3",
-        5: "4",
-        6: "5",
-        },
-    2: {
-        1: "KEY_TAB",
-        2: "q",
-        3: 'w',
-        4: 'e',
-        5: 'r',
-        6: 't',
-    },
-    3: {
-        1: "KEY_LEFT_GUI",
-        2: "a",
-        3: 's',
-        4: 'd',
-        5: 'f',
-        6: 'g',
-    },
-    4: {
-        1: "KEY_LEFT_SHIFT",
-        2: "z",
-        3: 'x',
-        4: 'c',
-        5: 'v',
-        6: 'b',
-    },
+    1: {1: "=", 2: "1", 3: "2", 4: "3", 5: "4", 6: "5",},
+    2: {1: "KEY_TAB", 2: "q", 3: "w", 4: "e", 5: "r", 6: "t",},
+    3: {1: "KEY_LEFT_GUI", 2: "a", 3: "s", 4: "d", 5: "f", 6: "g",},
+    4: {1: "KEY_LEFT_SHIFT", 2: "z", 3: "x", 4: "c", 5: "v", 6: "b",},
     5: {
-        1: "MOUSE_LEFT",
+        1: "LAYER",
         2: "`",
         3: "KEY_LEFT_GUI",
         4: "KEY_LEFT_ARROW",
         5: "KEY_RIGHT_ARROW",
     },
-    6: {
-        5: "KEY_BACKSPACE",
-        6: "KEY_LEFT_CTRL",
-    },
-    7: {
-        5: "KEY_ESC",
-        6: "KEY_LEFT_GUI",
-    },
-    8: {
-        5: "KEY_END",
-        6: "KEY_LEFT_ALT",
-    },
+    6: {5: "KEY_BACKSPACE", 6: "KEY_LEFT_CTRL",},
+    7: {5: "KEY_ESC", 6: "KEY_LEFT_GUI",},
+    8: {5: "KEY_END", 6: "KEY_LEFT_ALT",},
 }
 
 layout_right = {
-    1: {
-        1: "-",
-        2: "0",
-        3: "9",
-        4: "8",
-        5: "7",
-        6: "6",
-        },
-    2: {
-        1: "\\",
-        2: "p",
-        3: 'o',
-        4: 'i',
-        5: 'u',
-        6: 'y',
-    },
-    3: {
-        1: "'",
-        2: ";",
-        3: 'l',
-        4: 'k',
-        5: 'j',
-        6: 'h',
-    },
-    4: {
-        1: "KEY_RIGHT_SHIFT",
-        2: "/",
-        3: '.',
-        4: ',',
-        5: 'm',
-        6: 'n',
-    },
-    5: {
-        1: "KEY_RIGHT_GUI",
-        2: "]",
-        3: "[",
-        4: "KEY_UP_ARROW",
-        5: "KEY_DOWN_ARROW",
-    },
-    6: {
-        5: " ",
-        6: "KEY_RIGHT_CTRL",
-    },
-    7: {
-        5: "KEY_RETURN",
-        6: "KEY_RIGHT_GUI",
-    },
-    8: {
-        5: "KEY_END",
-        6: "KEY_RIGHT_ALT",
-    },
+    1: {1: "-", 2: "0", 3: "9", 4: "8", 5: "7", 6: "6",},
+    2: {1: "\\", 2: "p", 3: "o", 4: "i", 5: "u", 6: "y",},
+    3: {1: "'", 2: ";", 3: "l", 4: "k", 5: "j", 6: "h",},
+    4: {1: "KEY_RIGHT_SHIFT", 2: "/", 3: ".", 4: ",", 5: "m", 6: "n",},
+    5: {1: "KEY_RIGHT_GUI", 2: "]", 3: "[", 4: "KEY_UP_ARROW", 5: "KEY_DOWN_ARROW",},
+    6: {5: " ", 6: "KEY_RIGHT_CTRL",},
+    7: {5: "KEY_RETURN", 6: "KEY_RIGHT_GUI",},
+    8: {5: "KEY_END", 6: "KEY_RIGHT_ALT",},
 }
 
-layers_right = {
+layers = {
     "FN": {
-        "key": [6, 7],
-        1: {
-            1: "KEY_F7",
-            2: "KEY_F6",
-            3: "KEY_F5",
-            4: "KEY_F4",
-            5: "KEY_F3",
-            6: "KEY_F2",
-            7: "KEY_F1"
-            },
-        2: {
-            3: "KEY_F12",
-            4: "KEY_F11",
-            5: "KEY_F10",
-            6: "KEY_F9",
-            7: "KEY_F8",
+        "key": {"half": "left", "key": [5, 1]},
+        "map_right": {
+        3: {
+            6: "KEY_LEFT_ARROW",
+            5: "KEY_DOWN_ARROW",
+            4: "KEY_UP_ARROW",
+            3: "KEY_RIGHT_ARROW",
         },
+        },
+        "map_left": {}
     }
 }
-
-layers_left = {}
-layers_right = {}

@@ -1,5 +1,5 @@
 from helpers import *
-from layout import row_pin_map, col_pin_map, layout_left, layout_right, layers_right, layers_left
+from layout import row_pin_map, col_pin_map, layout_left, layout_right, layers
 from snippets import preamble, functions
 
 debug = False
