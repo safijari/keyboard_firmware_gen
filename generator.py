@@ -56,6 +56,7 @@ void setup() {
     for row_num, cols in layout.items():
         code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
         for col_num, mapped_key in cols.items():
+            is_mouse = "false"
             if mapped_key in ["\'", "\\"]:
                 mapped_key = "\\" + mapped_key
                 mapped_key = f"'{mapped_key}'"
@@ -68,7 +69,9 @@ void setup() {
                 if not new_key:
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            code += f"  check_key({col(col_num)}, {down(row_num, col_num)}, to_check, {row_num}, {col_num});\n\n"
+            if "MOUSE" in mapped_key:
+                is_mouse = "true"
+            code += f"  check_key({col(col_num)}, {down(row_num, col_num)}, to_check, {row_num}, {col_num}, {is_mouse});\n\n"
 
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
@@ -87,8 +90,15 @@ void setup() {
 #     with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_right/dactyl_right.ino", "w") as ff:
 #         ff.write(generate_code(layout_right, layers_right))
 
-with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_left/dactyl_left.ino", "w") as ff:
-    ff.write(generate_code_secondary(layout_left))
+# with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_left/dactyl_left.ino", "w") as ff:
+#     ff.write(generate_code_secondary(layout_left))
 
-with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_right/dactyl_right.ino", "w") as ff:
-    ff.write(generate_code_primary(layout_right, layout_left, layers_right))
+# with open("/mnt/c/Users/janso/OneDrive/Desktop/dactyl_right/dactyl_right.ino", "w") as ff:
+#     ff.write(generate_code_primary(layout_right, layout_left, layers_right))
+
+if __name__ == "__main__":
+    with open("/tmp/dactyl_left/dactyl_left.ino", "w") as ff:
+        ff.write(generate_code(layout_left, layers_left))
+
+    with open("/tmp/dactyl_right.ino", "w") as ff:
+        ff.write(generate_code(layout_right, layers_right))

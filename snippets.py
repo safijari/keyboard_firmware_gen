@@ -1,5 +1,6 @@
 preamble = """
 #include "Keyboard.h"
+#include "Mouse.h"
 
 """
 
@@ -22,14 +23,13 @@ bool check_key_down(int row_pin, int column_pin) {
   return out;
 }
 
-void check_key(int pin, char & flag, char ch, int row, int column) {
+void check_key(int pin, int & flag, char ch, int row, int column, bool is_mouse = false) {
   if (digitalRead(pin) == LOW) {
       if (flag == '0') {
-        Keyboard.press(ch);        
-        if (DEBUG == 1) {
-          Serial.print(row);
-          Serial.print(",");
-          Serial.println(column);
+        if (!is_mouse) {
+            Keyboard.press(ch);
+        } else {
+            Mouse.press(ch);
         }
         flag = '1';
       }
