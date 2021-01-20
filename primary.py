@@ -84,7 +84,7 @@ void setup() {
             """
 
     def sanitize_mapped_key(mapped_key):
-        if mapped_key in lnames or "LAYER" in mapped_key:
+        if mapped_key in lnames or "LAYER" in mapped_key or "NO_OP" in mapped_key:
             return
         if mapped_key in ["\'", "\\"]:
             mapped_key = "\\" + mapped_key
