@@ -108,9 +108,10 @@ layout_left = {
     5: {
         1: "MOUSE_LEFT",
         2: "`",
-        6: "KEY_ESC",
+        3: "KEY_LEFT_GUI",
         4: "KEY_LEFT_ARROW",
         5: "KEY_RIGHT_ARROW",
+        6: "KEY_ESC",
     },
     6: {
         5: "KEY_BACKSPACE",

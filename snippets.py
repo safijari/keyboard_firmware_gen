@@ -23,7 +23,7 @@ bool check_key_down(int row_pin, int column_pin) {
   return out;
 }
 
-void check_key(int pin, int & flag, char ch, int row, int column, bool is_mouse = false) {
+void check_key(int pin, char & flag, char ch, int row, int column, bool is_mouse = false) {
   if (digitalRead(pin) == LOW) {
       if (flag == '0') {
         if (!is_mouse) {
@@ -31,6 +31,26 @@ void check_key(int pin, int & flag, char ch, int row, int column, bool is_mouse 
         } else {
             Mouse.press(ch);
         }
+        flag = '1';
+      }
+    }
+    else {
+      if (flag == '1') {
+        flag = '0';
+        if (!is_mouse) {
+            Keyboard.release(ch);
+        }
+        else {
+            Mouse.release(ch);
+        }
+      }
+    }
+}
+
+void hold_key(char & state, char & flag, char ch) {
+  if (state == '1') {
+      if (flag == '0') {
+        Keyboard.press(ch);
         flag = '1';
       }
     }

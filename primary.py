@@ -24,9 +24,9 @@ def generate_code_primary(layout, layout_secondary, layers):
     num_keys, row_col_to_state_idx = make_state_map(layout)
     num_keys_sec, row_col_to_state_idx_sec = make_state_map(layout_secondary)
 
-    code += f"""char state[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
-    # code += f"""char state_sec[] = {{ {','.join(["'0'"]*num_keys_sec)} }};\n"""
+    code += f"""char flags[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
     code += """char state_sec[100];\n"""
+    code += f"""char flags_sec[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
 
     code += """
 void setup() {
@@ -43,6 +43,7 @@ void setup() {
     code += "  Keyboard.begin();\n delay(300);\n}"
 
     code += """\nvoid loop() {
+    bool process_seconday = false;
     char to_check;
     Serial.println(millis());
     """
@@ -54,9 +55,10 @@ void setup() {
             Serial.println(tots);
             Serial.write(state_sec, tots);
             Serial.println();
+            process_seconday = true;
         }}
         else {{
-            Serial.println("miss");
+            // Serial.println("miss");
         }}
     }}
     """
@@ -73,24 +75,35 @@ void setup() {
     }}
         """
 
+    def sanitize_mapped_key(mapped_key):
+        if mapped_key in ["\'", "\\"]:
+            mapped_key = "\\" + mapped_key
+            mapped_key = f"'{mapped_key}'"
+
+        if len(mapped_key) == 1:
+            mapped_key = f"'{mapped_key}'"
+
+        return mapped_key
+
     for row_num, cols in layout.items():
         code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
         for col_num, mapped_key in cols.items():
-            if mapped_key in ["\'", "\\"]:
-                mapped_key = "\\" + mapped_key
-                mapped_key = f"'{mapped_key}'"
-
-            if len(mapped_key) == 1:
-                mapped_key = f"'{mapped_key}'"
+            mapped_key = sanitize_mapped_key(mapped_key)
             code += f"  to_check = {mapped_key};\n"
             for ln in lnames:
                 new_key = layers[ln].get(row_num, {}).get(col_num, None)
                 if not new_key:
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            code += f"  check_key({col(col_num)}, state[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, {row_num}, {col_num});\n\n"
+            code += f"  check_key({col(col_num)}, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, {row_num}, {col_num});\n\n"
 
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
+
+    for row_num, cols in layout_secondary.items():
+        for col_num, mapped_key in cols.items():
+            mapped_key = sanitize_mapped_key(mapped_key)
+            idx = row_col_to_state_idx_sec[rckey(row_num, col_num)]
+            code += f"  hold_key(state_sec[{idx}], flags_sec[{idx}], {mapped_key});\n"
 
     code += "\n}"
 

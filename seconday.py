@@ -17,9 +17,16 @@ def generate_code_secondary(layout):
 
     code += functions + "\n"
 
-    num_keys, row_col_to_state_idx = make_state_map(layout)
+    num_keys = 0
+    state_idx_to_row_col = {}
+    for row_num, cols in layout.items():
+        for col_num in cols:
+            state_idx_to_row_col[num_keys] = [row_num, col_num]
+            num_keys += 1
 
-    code += f"""char state[] = {{ {','.join(["'0'"]*num_keys)}"""
+    row_col_to_state_idx = {rckey(*v): k for k, v in state_idx_to_row_col.items()}
+
+    code += f"""char state[] = {{ {','.join(["'1'"]*num_keys)}"""
     code += """, '\\n'};\n"""
 
     code += """
@@ -41,6 +48,13 @@ void setup() {
     Serial1.write(state, {num_keys + 1});
     Serial.write(state, {num_keys + 1});
     """
+
+    for row_num, cols in layout.items():
+        code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
+        for col_num, _ in cols.items():
+            code += f"  check_key_state({col(col_num)}, state[{row_col_to_state_idx[rckey(row_num, col_num)]}]);\n"
+
+        code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
     code += f"""
     Serial.println(millis());
