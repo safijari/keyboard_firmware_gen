@@ -79,7 +79,7 @@ layout_left = {
     4: {1: "KEY_LEFT_SHIFT", 2: "z", 3: "x", 4: "c", 5: "v", 6: "b",},
     5: {1: "LAYER", 2: "`", 3: "KEY_LEFT_GUI", 4: "NO_OP", 5: "NO_OP",},
     6: {5: "KEY_BACKSPACE", 6: "KEY_LEFT_CTRL",},
-    7: {5: "KEY_ESC", 6: "KEY_LEFT_GUI",},
+    7: {5: "KEY_ESC", 6: "LAYER",},
     8: {5: "LAYER", 6: "KEY_LEFT_ALT",},
 }
 
@@ -106,7 +106,14 @@ layers = {
                 3: "KEY_RIGHT_ARROW",
             },
             4: {4: "KEY_PAGE_DOWN"},
+            6: {5: "KEY_DELETE"},
         },
         "map_left": {},
+    },
+    "TMUX": {
+        "key": {"half": "left", "key": [7, 6]},
+        "map_right": {},
+        "map_left": {},
+        "leader": ["KEY_LEFT_CTRL", 'b']
     }
 }
