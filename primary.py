@@ -45,6 +45,7 @@ void setup() {
     code += """\nvoid loop() {
     bool process_seconday = false;
     char to_check;
+    bool is_mouse = false;
     Serial.println(millis());
     """
 
@@ -98,32 +99,40 @@ void setup() {
     for row_num, cols in layout.items():
         code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
         for col_num, mapped_key in cols.items():
+            is_mouse = "false"
+            if "MOUSE" in mapped_key:
+                is_mouse = "true"
             mapped_key = sanitize_mapped_key(mapped_key)
             if not mapped_key:
                 continue
             code += f"  to_check = {mapped_key};\n"
+            code += f"  is_mouse = {is_mouse};\n"
             for ln in lnames:
                 new_key = layers[ln]["map_right"].get(row_num, {}).get(col_num, None)
                 if not new_key:
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            code += f"  check_key({col(col_num)}, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, {row_num}, {col_num});\n\n"
+            code += f"  check_key({col(col_num)}, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, {row_num}, {col_num}, is_mouse);\n\n"
 
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
     for row_num, cols in layout_secondary.items():
         for col_num, mapped_key in cols.items():
+            is_mouse = "false"
+            if "MOUSE" in mapped_key:
+                is_mouse = "true"
             mapped_key = sanitize_mapped_key(mapped_key)
             if not mapped_key:
                 continue
             code += f"  to_check = {mapped_key};\n"
+            code += f"  is_mouse = {is_mouse};\n"
             for ln in lnames:
                 new_key = layers[ln]["map_left"].get(row_num, {}).get(col_num, None)
                 if not new_key:
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
             idx = row_col_to_state_idx_sec[rckey(row_num, col_num)]
-            code += f"  hold_key(state_sec[{idx}], flags_sec[{idx}], to_check);\n\n"
+            code += f"  hold_key(state_sec[{idx}], flags_sec[{idx}], to_check, is_mouse);\n\n"
 
     code += "\n}"
 

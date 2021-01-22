@@ -23,41 +23,50 @@ bool check_key_down(int row_pin, int column_pin) {
   return out;
 }
 
+void press_gen(char ch, bool is_mouse) {
+  if (!is_mouse) {
+    Keyboard.press(ch);
+  }
+  else {
+    Mouse.press(ch);
+  }
+}
+
+void release_gen(char ch, bool is_mouse) {
+  if (!is_mouse) {
+    Keyboard.release(ch);
+  }
+  else {
+    Mouse.release(ch);
+  }
+}
+
 void check_key(int pin, char & flag, char ch, int row, int column, bool is_mouse = false) {
   if (digitalRead(pin) == LOW) {
       if (flag == '0') {
-        if (!is_mouse) {
-            Keyboard.press(ch);
-        } else {
-            Mouse.press(ch);
-        }
+        press_gen(ch, is_mouse);
         flag = '1';
       }
     }
     else {
       if (flag == '1') {
         flag = '0';
-        if (!is_mouse) {
-            Keyboard.release(ch);
-        }
-        else {
-            Mouse.release(ch);
-        }
+        release_gen(ch, is_mouse);
       }
     }
 }
 
-void hold_key(char & state, char & flag, char ch) {
+void hold_key(char & state, char & flag, char ch, bool is_mouse = false) {
   if (state == '1') {
       if (flag == '0') {
-        Keyboard.press(ch);
+        press_gen(ch, is_mouse);
         flag = '1';
       }
     }
     else {
       if (flag == '1') {
         flag = '0';
-        Keyboard.release(ch);
+        release_gen(ch, is_mouse);
       }
     }
 }
