@@ -14,16 +14,21 @@ void setup_output(int pin) {
   digitalWrite(pin, HIGH);
 }
 
-bool check_key_down(int row_pin, int column_pin) {
-  digitalWrite(row_pin, LOW);
+bool check_key_down(int row_pin, int column_pin = -1) {
+  if (column_pin != -1) {
+    digitalWrite(row_pin, LOW);
+  }
 
   bool out = (digitalRead(column_pin) == LOW);
-  digitalWrite(row_pin, HIGH);
+  if (column_pin != -1) {
+    digitalWrite(row_pin, HIGH);
+  }
 
   return out;
 }
 
-void press_gen(char ch, bool is_mouse) {
+void press_gen(char ch, bool is_mouse, bool send_on_release) {
+  if (send_on_release) {return;}
   if (!is_mouse) {
     Keyboard.press(ch);
   }
@@ -32,41 +37,34 @@ void press_gen(char ch, bool is_mouse) {
   }
 }
 
-void release_gen(char ch, bool is_mouse) {
+void release_gen(char ch, bool is_mouse, bool send_on_release) {
   if (!is_mouse) {
-    Keyboard.release(ch);
+    if (!send_on_release) {
+        Keyboard.release(ch);
+    } else {
+        Keyboard.write(ch);
+    }
   }
   else {
-    Mouse.release(ch);
+    if (!send_on_release) {
+        Mouse.release(ch);
+    } else {
+        Mouse.click(ch);
+    }
   }
 }
 
-void check_key(int pin, char & flag, char ch, int row, int column, bool is_mouse = false) {
-  if (digitalRead(pin) == LOW) {
-      if (flag == '0') {
-        press_gen(ch, is_mouse);
-        flag = '1';
-      }
-    }
-    else {
-      if (flag == '1') {
-        flag = '0';
-        release_gen(ch, is_mouse);
-      }
-    }
-}
-
-void hold_key(char & state, char & flag, char ch, bool is_mouse = false) {
+void hold_key(char & state, char & flag, char ch, bool is_mouse = false, bool send_on_release = false) {
   if (state == '1') {
       if (flag == '0') {
-        press_gen(ch, is_mouse);
+        press_gen(ch, is_mouse, send_on_release);
         flag = '1';
       }
     }
     else {
       if (flag == '1') {
         flag = '0';
-        release_gen(ch, is_mouse);
+        release_gen(ch, is_mouse, send_on_release);
       }
     }
 }

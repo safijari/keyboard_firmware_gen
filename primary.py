@@ -45,6 +45,7 @@ void setup() {
     code += """\nvoid loop() {
     bool process_seconday = false;
     char to_check;
+    char key_state = '0';
     bool is_mouse = false;
     Serial.println(millis());
     """
@@ -112,7 +113,8 @@ void setup() {
                 if not new_key:
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            code += f"  check_key({col(col_num)}, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, {row_num}, {col_num}, is_mouse);\n\n"
+            code += f"  key_state = check_key_down({col(col_num)})? '1' : '0';\n"
+            code += f"  hold_key(key_state, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, is_mouse);\n\n"
 
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
