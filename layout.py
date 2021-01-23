@@ -111,9 +111,9 @@ layers = {
         "map_left": {},
     },
     "TMUX": {
-        "key": {"half": "left", "key": [7, 6]},
+        "key": {"half": "left", "key": [8, 5]},
         "map_right": {},
         "map_left": {},
-        "leader": ["KEY_LEFT_CTRL", 'b']
+        "chord": {"mod": "KEY_LEFT_CTRL", "leader": "b" }
     }
 }

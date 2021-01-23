@@ -14,6 +14,12 @@ void setup_output(int pin) {
   digitalWrite(pin, HIGH);
 }
 
+void emit_chord(char mod, char leader) {
+  Keyboard.press(mod);
+  Keyboard.write(leader);
+  Keyboard.release(mod);
+}
+
 bool check_key_down(int column_pin, int row_pin = -1) {
   if (row_pin != -1) {
     digitalWrite(row_pin, LOW);
@@ -59,14 +65,14 @@ void hold_key(char & state, char & flag, char ch, bool is_mouse = false, bool se
       if (flag == '0') {
         press_gen(ch, is_mouse, send_on_release);
         flag = '1';
-      }
     }
-    else {
-      if (flag == '1') {
-        flag = '0';
-        release_gen(ch, is_mouse, send_on_release);
-      }
+  }
+  else {
+    if (flag == '1') {
+      flag = '0';
+      release_gen(ch, is_mouse, send_on_release);
     }
+  }
 }
 
 void check_key_state(int pin, char & flag) {

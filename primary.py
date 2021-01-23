@@ -114,6 +114,11 @@ void setup() {
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
             code += f"  key_state = check_key_down({col(col_num)})? '1' : '0';\n"
+            code += f"  if (key_state == '1' && flags[{row_col_to_state_idx[rckey(row_num, col_num)]}] == '0') " + "{"
+            for ln in lnames:
+                if "chord" in layers[ln]:
+                    code += f" if (layer_{ln}_down == 1)" + "{"
+                    code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
             code += f"  hold_key(key_state, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, is_mouse);\n\n"
 
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
@@ -134,6 +139,12 @@ void setup() {
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
             idx = row_col_to_state_idx_sec[rckey(row_num, col_num)]
+            code += f"  key_state = state_sec[{idx}];\n"
+            code += f"  if (key_state == '1' && flags_sec[{idx}] == '0') " + "{"
+            for ln in lnames:
+                if "chord" in layers[ln]:
+                    code += f" if (layer_{ln}_down == 1)" + "{"
+                    code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
             code += f"  hold_key(state_sec[{idx}], flags_sec[{idx}], to_check, is_mouse);\n\n"
 
     code += "\n}"
