@@ -14,13 +14,13 @@ void setup_output(int pin) {
   digitalWrite(pin, HIGH);
 }
 
-bool check_key_down(int row_pin, int column_pin = -1) {
-  if (column_pin != -1) {
+bool check_key_down(int column_pin, int row_pin = -1) {
+  if (row_pin != -1) {
     digitalWrite(row_pin, LOW);
   }
 
   bool out = (digitalRead(column_pin) == LOW);
-  if (column_pin != -1) {
+  if (row_pin != -1) {
     digitalWrite(row_pin, HIGH);
   }
 

@@ -74,7 +74,7 @@ void setup() {
         r, c = layers[ln]["key"]["key"]
         if half == "right":
             code += f"""
-    if (check_key_down({row_pin_map[r]}, {col_pin_map[c]})) {{
+    if (check_key_down({col_pin_map[c]}, {row_pin_map[r]})) {{
         layer_{ln}_down = 1;
     }}
             """
