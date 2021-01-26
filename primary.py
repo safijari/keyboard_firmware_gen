@@ -32,6 +32,8 @@ def generate_code_primary(layout, layout_secondary, layers):
 void setup() {
     Serial1.begin(115200);
     Serial.begin(115200);
+    pinMode(LED_BUILTIN_TX,INPUT);
+    pinMode(LED_BUILTIN_RX,INPUT);
     \n"""
 
     for row_num in row_pin_map:
