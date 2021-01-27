@@ -24,9 +24,9 @@ def generate_code_primary(layout, layout_secondary, layers):
     num_keys, row_col_to_state_idx = make_state_map(layout)
     num_keys_sec, row_col_to_state_idx_sec = make_state_map(layout_secondary)
 
-    code += f"""char flags[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
+    code += f"""unsigned long flags[] = {{ {','.join(['0']*num_keys)} }};\n"""
     code += """char state_sec[100];\n"""
-    code += f"""char flags_sec[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
+    code += f"""unsigned long flags_sec[] = {{ {','.join(['0']*num_keys)} }};\n"""
 
     code += """
 void setup() {
@@ -49,6 +49,8 @@ void setup() {
     char to_check;
     char key_state = '0';
     bool is_mouse = false;
+    unsigned long flag_val = 0;
+    bool send_on_release = false;
     Serial.println(millis());
     """
 
@@ -102,13 +104,23 @@ void setup() {
     for row_num, cols in layout.items():
         code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
         for col_num, mapped_key in cols.items():
-            is_mouse = "false"
-            if "MOUSE" in mapped_key:
-                is_mouse = "true"
-            mapped_key = sanitize_mapped_key(mapped_key)
-            if not mapped_key:
-                continue
-            code += f"  to_check = {mapped_key};\n"
+            if not isinstance(mapped_key, list):
+                is_mouse = "false"
+                if "MOUSE" in mapped_key:
+                    is_mouse = "true"
+                mapped_key = sanitize_mapped_key(mapped_key)
+                if not mapped_key:
+                    continue
+            else:
+                mapped_key = [sanitize_mapped_key(k) for k in mapped_key]
+
+            code += f"  flag_val = flags[{row_col_to_state_idx[rckey(row_num, col_num)]}];\n"
+            code += f"  send_on_release = false;\n"
+            if isinstance(mapped_key, list):
+                code += f"  to_check = {mapped_key[1]};\n"
+                code += f"  if (millis() - flag_val < 50) {{to_check = {mapped_key[0]}; send_on_release = true;}}\n "
+            else:
+                code += f"  to_check = {mapped_key};\n"
             code += f"  is_mouse = {is_mouse};\n"
             for ln in lnames:
                 new_key = layers[ln]["map_right"].get(row_num, {}).get(col_num, None)
@@ -116,12 +128,14 @@ void setup() {
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
             code += f"  key_state = check_key_down({col(col_num)})? '1' : '0';\n"
-            code += f"  if (key_state == '1' && flags[{row_col_to_state_idx[rckey(row_num, col_num)]}] == '0') " + "{"
+            code += f"  if (key_state == '1' && flags[{row_col_to_state_idx[rckey(row_num, col_num)]}] == 0) " + "{"
+
             for ln in lnames:
                 if "chord" in layers[ln]:
                     code += f" if (layer_{ln}_down == 1)" + "{"
                     code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
-            code += f"  hold_key(key_state, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, is_mouse);\n\n"
+
+            code += f"  hold_key(key_state, flag_val, to_check, is_mouse);\n\n"
 
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
@@ -142,7 +156,7 @@ void setup() {
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
             idx = row_col_to_state_idx_sec[rckey(row_num, col_num)]
             code += f"  key_state = state_sec[{idx}];\n"
-            code += f"  if (key_state == '1' && flags_sec[{idx}] == '0') " + "{"
+            code += f"  if (key_state == '1' && flags_sec[{idx}] == 0) " + "{"
             for ln in lnames:
                 if "chord" in layers[ln]:
                     code += f" if (layer_{ln}_down == 1)" + "{"

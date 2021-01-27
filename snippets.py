@@ -60,16 +60,16 @@ void release_gen(char ch, bool is_mouse, bool send_on_release) {
   }
 }
 
-void hold_key(char & state, char & flag, char ch, bool is_mouse = false, bool send_on_release = false) {
+void hold_key(char & state, unsigned long & flag, char ch, bool is_mouse = false, bool send_on_release = false) {
   if (state == '1') {
-      if (flag == '0') {
+      if (flag == 0) {
         press_gen(ch, is_mouse, send_on_release);
-        flag = '1';
+        flag = millis();
     }
   }
   else {
-    if (flag == '1') {
-      flag = '0';
+    if (flag > 0) {
+      flag = 0;
       release_gen(ch, is_mouse, send_on_release);
     }
   }
