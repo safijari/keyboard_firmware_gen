@@ -6,37 +6,6 @@ preamble = """
 
 functions = """
 
-enum KeyState {
-    KEY_DOWN,
-    KEY_UP,
-    KEY_UP_FROM_DOWN,
-    KEY_DOWN_FROM_UP,
-    KEY_UNK
-};
-
-class KeyTracker {
-  KeyState state;
-  unsigned long downed_at;
-  bool was_down;
-
-  bool currently_down();
-public:
-  KeyTracker();
-  void update(bool is_down);
-};
-
-KeyTracker::KeyTracker() : state(KeyState::KEY_UNK), downed_at(0), was_down(false) {}
-
-void KeyTracker::update(bool is_down) {
-  if (was_down && state == KeyState::KEY_DOWN_FROM_UP) {state = KeyState::KEY_DOWN;}
-  if (!was_down && state == KeyState::KEY_UP_FROM_DOWN) {state = KeyState::KEY_UP;}
-
-  if (was_down && !is_down) {state = KeyState::KEY_DOWN_FROM_UP; downed_at = millis();}
-  if (!was_down && is_down) {state = KeyState::KEY_UP_FROM_DOWN;}
-
-  was_down = is_down;
-}
-
 void setup_input(int pin) {
   pinMode(pin, INPUT_PULLUP);
 }
@@ -124,4 +93,54 @@ void check_key_state(int pin, char & flag) {
     flag = '0';
   }
 }
+
+
+enum KeyState {
+    KEY_DOWN,
+    KEY_UP,
+    KEY_UP_FROM_DOWN,
+    KEY_DOWN_FROM_UP,
+    KEY_UNK
+};
+
+class KeyTracker {
+  KeyState state;
+  char code;
+  char hold_code;
+  unsigned long downed_at;
+  bool was_down;
+  bool dont_emit;
+
+  bool currently_down();
+public:
+  KeyTracker(char code, char hold_code, bool dont_emit);
+  void update(bool is_down);
+  void emit();
+};
+
+KeyTracker::KeyTracker(char code = ' ', char hold_code = ' ', bool dont_emit = false) : state(KeyState::KEY_UNK), code(code), hold_code(hold_code), downed_at(0), was_down(false) {}
+
+void KeyTracker::update(bool is_down) {
+  if (was_down && state == KeyState::KEY_DOWN_FROM_UP) {state = KeyState::KEY_DOWN;}
+  if (!was_down && state == KeyState::KEY_UP_FROM_DOWN) {state = KeyState::KEY_UP;}
+
+  if (!was_down && is_down) {state = KeyState::KEY_DOWN_FROM_UP; downed_at = millis();}
+  if (was_down && !is_down) {state = KeyState::KEY_UP_FROM_DOWN;}
+
+  if (!dont_emit) {
+    emit();
+  }
+
+  was_down = is_down;
+}
+
+void KeyTracker::emit() {
+  if (state == KeyState::KEY_DOWN_FROM_UP) {
+    press_gen(code, false, false);
+  }
+  if (state == KeyState::KEY_UP_FROM_DOWN) {
+    release_gen(code, false, false);
+  }
+}
+
 """

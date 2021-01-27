@@ -25,9 +25,11 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
     num_keys_sec, row_col_to_state_idx_sec = make_state_map(layout_secondary)
 
     code += f"""char flags[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
+    code += f"""char flags_sec[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
+    code += f"""KeyTracker trackers[{num_keys}];\n"""
+    code += f"""KeyTracker trackers_sec[{num_keys}];\n"""
     code += f"""char state_sec[{num_keys}];\n"""
     code += f"""char state[{num_keys}];\n"""
-    code += f"""char flags_sec[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
 
     code += """
 void setup() {
@@ -36,6 +38,29 @@ void setup() {
     pinMode(LED_BUILTIN_TX,INPUT);
     pinMode(LED_BUILTIN_RX,INPUT);
     \n"""
+
+    lnames = list(layers.keys())
+
+    def sanitize_mapped_key(mapped_key):
+        if mapped_key in lnames or "LAYER" in mapped_key or "NO_OP" in mapped_key:
+            return
+        if mapped_key in ["\'", "\\"]:
+            mapped_key = "\\" + mapped_key
+            mapped_key = f"'{mapped_key}'"
+
+        if len(mapped_key) == 1:
+            mapped_key = f"'{mapped_key}'"
+
+        return mapped_key
+
+
+    for tracker_name, layout in zip(["trackers", "trackers_sec"], [layout_primary, layout_secondary]):
+        for row_num, cols in layout_primary.items():
+            for col_num, mapped_key in cols.items():
+                key = sanitize_mapped_key(mapped_key);
+                dont_emit = "true" if not key else "false"
+                key = key or "' '"
+                code += f"""{tracker_name}[{row_col_to_state_idx[rckey(row_num, col_num)]}] = KeyTracker({key}, {key}, {dont_emit}); \n"""
 
     for row_num in row_pin_map:
         code += f"  setup_output({row(row_num)});\n"
@@ -48,7 +73,6 @@ void setup() {
     code += """\nvoid loop() {
     bool process_seconday = false;
     char to_check;
-    char key_state = '0';
     bool is_mouse = false;
     Serial.println(millis());
     """
@@ -75,7 +99,6 @@ void setup() {
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
 
-    lnames = list(layers.keys())
 
     for ln in lnames:
         code += f"int layer_{ln}_down = 0;\n"
@@ -92,44 +115,13 @@ void setup() {
     if (state_sec[{row_col_to_state_idx_sec[rckey(r, c)]}] == '1') {{
         layer_{ln}_down = 1;
     }}
-            """
+            \n"""
 
-    def sanitize_mapped_key(mapped_key):
-        if mapped_key in lnames or "LAYER" in mapped_key or "NO_OP" in mapped_key:
-            return
-        if mapped_key in ["\'", "\\"]:
-            mapped_key = "\\" + mapped_key
-            mapped_key = f"'{mapped_key}'"
-
-        if len(mapped_key) == 1:
-            mapped_key = f"'{mapped_key}'"
-
-        return mapped_key
-
-    for layout, map_name, state_name, flag_name in zip([layout_primary, layout_secondary], ["map_right", "map_left"], ["state", "state_sec"], ["flags", "flags_sec"]):
+    for layout, map_name, state_name, tracker_name in zip([layout_primary, layout_secondary], ["map_right", "map_left"], ["state", "state_sec"], ["trackers", "trackers_sec"]):
         for row_num, cols in layout.items():
             for col_num, mapped_key in cols.items():
-                is_mouse = "false"
-                if "MOUSE" in mapped_key:
-                    is_mouse = "true"
-                mapped_key = sanitize_mapped_key(mapped_key)
-                if not mapped_key:
-                    continue
-                code += f"  to_check = {mapped_key};\n"
-                code += f"  is_mouse = {is_mouse};\n"
-                for ln in lnames:
-                    new_key = layers[ln][map_name].get(row_num, {}).get(col_num, None)
-                    if not new_key:
-                        continue
-                    code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-                idx = row_col_to_state_idx_sec[rckey(row_num, col_num)]
-                code += f"  key_state = {state_name}[{idx}];\n"
-                code += f"  if (key_state == '1' && {flag_name}[{idx}] == '0') " + "{"
-                for ln in lnames:
-                    if "chord" in layers[ln]:
-                        code += f" if (layer_{ln}_down == 1)" + "{"
-                        code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
-                code += f"  hold_key({state_name}[{idx}], {flag_name}[{idx}], to_check, is_mouse);\n\n"
+                idx = f"{row_col_to_state_idx[rckey(row_num, col_num)]}"
+                code += f"{tracker_name}[{idx}].update({state_name}[{idx}] == '1');\n"
 
     code += "\n}"
 
