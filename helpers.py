@@ -21,3 +21,14 @@ def make_state_map(layout):
     row_col_to_state_idx = {rckey(*v): k for k, v in state_idx_to_row_col.items()}
     return num_keys, row_col_to_state_idx
 
+
+NL = "\n"
+
+def list_to_lines(inlist, indentation):
+    if isinstance(inlist, list):
+        return "\n".join([" "*indentation + i for i in inlist])
+    else:
+        return " "*indentation + inlist
+
+def block(preamble, body, indentation=0):
+    return f"{' '*indentation}{preamble} {{ \n{list_to_lines(body, indentation + 2)}\n{' '*indentation}}}\n"

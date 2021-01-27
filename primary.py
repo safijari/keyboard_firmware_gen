@@ -5,7 +5,7 @@ from snippets import preamble, functions
 debug = False
 nl = '\\n'
 
-def generate_code_primary(layout, layout_secondary, layers):
+def generate_code_primary(layout_primary, layout_secondary, layers):
 
     code = ""
 
@@ -21,11 +21,12 @@ def generate_code_primary(layout, layout_secondary, layers):
 
     code += functions + "\n"
 
-    num_keys, row_col_to_state_idx = make_state_map(layout)
+    num_keys, row_col_to_state_idx = make_state_map(layout_primary)
     num_keys_sec, row_col_to_state_idx_sec = make_state_map(layout_secondary)
 
     code += f"""char flags[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
-    code += """char state_sec[100];\n"""
+    code += f"""char state_sec[{num_keys}];\n"""
+    code += f"""char state[{num_keys}];\n"""
     code += f"""char flags_sec[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
 
     code += """
@@ -67,6 +68,12 @@ void setup() {
     }}
     """
 
+    for row_num, cols in layout_primary.items():
+        code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
+        for col_num, mapped_key in cols.items():
+            code += f"  state[{row_col_to_state_idx_sec[rckey(row_num, col_num)]}] = check_col_down({col(col_num)});\n"
+        code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
+
 
     lnames = list(layers.keys())
 
@@ -99,55 +106,30 @@ void setup() {
 
         return mapped_key
 
-    for row_num, cols in layout.items():
-        code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
-        for col_num, mapped_key in cols.items():
-            is_mouse = "false"
-            if "MOUSE" in mapped_key:
-                is_mouse = "true"
-            mapped_key = sanitize_mapped_key(mapped_key)
-            if not mapped_key:
-                continue
-            code += f"  to_check = {mapped_key};\n"
-            code += f"  is_mouse = {is_mouse};\n"
-            for ln in lnames:
-                new_key = layers[ln]["map_right"].get(row_num, {}).get(col_num, None)
-                if not new_key:
+    for layout, map_name, state_name, flag_name in zip([layout_primary, layout_secondary], ["map_right", "map_left"], ["state", "state_sec"], ["flags", "flags_sec"]):
+        for row_num, cols in layout.items():
+            for col_num, mapped_key in cols.items():
+                is_mouse = "false"
+                if "MOUSE" in mapped_key:
+                    is_mouse = "true"
+                mapped_key = sanitize_mapped_key(mapped_key)
+                if not mapped_key:
                     continue
-                code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            code += f"  key_state = check_key_down({col(col_num)})? '1' : '0';\n"
-            code += f"  if (key_state == '1' && flags[{row_col_to_state_idx[rckey(row_num, col_num)]}] == '0') " + "{"
-            for ln in lnames:
-                if "chord" in layers[ln]:
-                    code += f" if (layer_{ln}_down == 1)" + "{"
-                    code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
-            code += f"  hold_key(key_state, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, is_mouse);\n\n"
-
-        code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
-
-    for row_num, cols in layout_secondary.items():
-        for col_num, mapped_key in cols.items():
-            is_mouse = "false"
-            if "MOUSE" in mapped_key:
-                is_mouse = "true"
-            mapped_key = sanitize_mapped_key(mapped_key)
-            if not mapped_key:
-                continue
-            code += f"  to_check = {mapped_key};\n"
-            code += f"  is_mouse = {is_mouse};\n"
-            for ln in lnames:
-                new_key = layers[ln]["map_left"].get(row_num, {}).get(col_num, None)
-                if not new_key:
-                    continue
-                code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            idx = row_col_to_state_idx_sec[rckey(row_num, col_num)]
-            code += f"  key_state = state_sec[{idx}];\n"
-            code += f"  if (key_state == '1' && flags_sec[{idx}] == '0') " + "{"
-            for ln in lnames:
-                if "chord" in layers[ln]:
-                    code += f" if (layer_{ln}_down == 1)" + "{"
-                    code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
-            code += f"  hold_key(state_sec[{idx}], flags_sec[{idx}], to_check, is_mouse);\n\n"
+                code += f"  to_check = {mapped_key};\n"
+                code += f"  is_mouse = {is_mouse};\n"
+                for ln in lnames:
+                    new_key = layers[ln][map_name].get(row_num, {}).get(col_num, None)
+                    if not new_key:
+                        continue
+                    code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
+                idx = row_col_to_state_idx_sec[rckey(row_num, col_num)]
+                code += f"  key_state = {state_name}[{idx}];\n"
+                code += f"  if (key_state == '1' && {flag_name}[{idx}] == '0') " + "{"
+                for ln in lnames:
+                    if "chord" in layers[ln]:
+                        code += f" if (layer_{ln}_down == 1)" + "{"
+                        code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
+                code += f"  hold_key({state_name}[{idx}], {flag_name}[{idx}], to_check, is_mouse);\n\n"
 
     code += "\n}"
 
