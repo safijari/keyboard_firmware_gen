@@ -12,6 +12,7 @@ def generate_code_primary(layout, layout_secondary, layers):
     code += preamble + "\n"
 
     code += f"#define DEBUG {int(debug)}\n"
+    code += f"#define TAP_TIME_IN_MS 200\n"
 
     for row_num, pin in row_pin_map.items():
         code += f"#define {row(row_num)} {pin}\n"
@@ -114,11 +115,12 @@ void setup() {
             else:
                 mapped_key = [sanitize_mapped_key(k) for k in mapped_key]
 
+            code += f"  key_state = check_key_down({col(col_num)})? '1' : '0';\n"
             code += f"  flag_val = flags[{row_col_to_state_idx[rckey(row_num, col_num)]}];\n"
             code += f"  send_on_release = false;\n"
             if isinstance(mapped_key, list):
                 code += f"  to_check = {mapped_key[1]};\n"
-                code += f"  if (millis() - flag_val < 50) {{to_check = {mapped_key[0]}; send_on_release = true;}}\n "
+                code += f"  if ((key_state == '1' && flag_val == 0) || millis() - flag_val < TAP_TIME_IN_MS) {{to_check = {mapped_key[0]}; send_on_release = true;}}\n "
             else:
                 code += f"  to_check = {mapped_key};\n"
             code += f"  is_mouse = {is_mouse};\n"
@@ -127,7 +129,6 @@ void setup() {
                 if not new_key:
                     continue
                 code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            code += f"  key_state = check_key_down({col(col_num)})? '1' : '0';\n"
             code += f"  if (key_state == '1' && flags[{row_col_to_state_idx[rckey(row_num, col_num)]}] == 0) " + "{"
 
             for ln in lnames:
@@ -135,7 +136,7 @@ void setup() {
                     code += f" if (layer_{ln}_down == 1)" + "{"
                     code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
 
-            code += f"  hold_key(key_state, flag_val, to_check, is_mouse);\n\n"
+            code += f"  \nhold_key(key_state, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, is_mouse, send_on_release);\n\n"
 
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
