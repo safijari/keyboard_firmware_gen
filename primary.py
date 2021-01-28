@@ -54,7 +54,7 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
         if len(k) == 2:
             if not dev_suffix:
                 dev_suffix = ", Device::KEYBOARD"
-            sec_suffix = ", " + sanitize_mapped_key(k[1])
+            sec_suffix = ", " + (sanitize_mapped_key(k[1]) or "NO_OP") 
         return "IndKeyMap(" + (sanitize_mapped_key(k[0]) or "NO_OP") + dev_suffix + sec_suffix + ")"
 
     for ln in ["base"] + lnames:
@@ -116,7 +116,12 @@ void setup() {
         half = layer["key"]["half"]
         suffix = "" if half == "right" else "_sec"
         r, c = layer["key"]["key"]
-        code += f"""if (trackers{suffix}[{row_col_to_state_idx[rckey(r, c)]}].primary_down()) {{
+        hold = layer["key"]["hold"]
+        if not hold:
+            code += f"""if (trackers{suffix}[{row_col_to_state_idx[rckey(r, c)]}].primary_down()) {{"""
+        else:
+            code += f"""if (trackers{suffix}[{row_col_to_state_idx[rckey(r, c)]}].long_down()) {{"""
+        code += f"""
         curr_map = {ln}_map;
         curr_map_sec = {ln}_map_sec;
 }}

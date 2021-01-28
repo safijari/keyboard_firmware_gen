@@ -8,6 +8,7 @@ def generate_code_secondary(layout):
     code = ""
     code += preamble + "\n"
     code += f"#define DEBUG {int(debug)}\n"
+    code += f"#define NO_OP 255\n"
 
     for row_num, pin in row_pin_map.items():
         code += f"#define {row(row_num)} {pin}\n"

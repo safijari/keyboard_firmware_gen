@@ -2,6 +2,8 @@ preamble = """
 #include "Keyboard.h"
 #include "Mouse.h"
 
+#define HOLD_DELAY 95
+
 """
 
 functions = """
@@ -29,6 +31,7 @@ char check_col_down(int column_pin) {
 }
 
 void press_gen(char ch, bool is_mouse, bool send_on_release) {
+  if (ch == NO_OP) {return;}
   if (send_on_release) {return;}
   if (!is_mouse) {
     Keyboard.press(ch);
@@ -39,6 +42,7 @@ void press_gen(char ch, bool is_mouse, bool send_on_release) {
 }
 
 void release_gen(char ch, bool is_mouse, bool send_on_release) {
+  if (ch == NO_OP) {return;}
   if (!is_mouse) {
     if (!send_on_release) {
         Keyboard.release(ch);
@@ -111,6 +115,7 @@ public:
   void emit(IndKeyMap *map);
   unsigned long down_for();
   bool primary_down();
+  bool long_down();
   bool up();
 };
 
@@ -133,6 +138,10 @@ bool KeyTracker::primary_down() {
   return (state == KeyState::KEY_DOWN || state == KeyState::KEY_DOWN_FROM_UP);
 }
 
+bool KeyTracker::long_down() {
+  return (state == KeyState::KEY_DOWN && down_for() > HOLD_DELAY);
+}
+
 bool KeyTracker::up() {
   return (state == KeyState::KEY_UP || state == KeyState::KEY_UP_FROM_DOWN);
 }
@@ -142,9 +151,8 @@ unsigned long KeyTracker::down_for() {
 }
 
 void KeyTracker::emit(IndKeyMap *map) {
-  auto p = 95;
   if (state == KeyState::KEY_UP) {_map = map;}
-  if (_map->primary.code == _map->secondary || down_for() > p) {
+  if (_map->primary.code == _map->secondary || down_for() > HOLD_DELAY) {
     if (state == KeyState::KEY_UP_FROM_DOWN) {
         release_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
         down_sent = false;
@@ -154,11 +162,11 @@ void KeyTracker::emit(IndKeyMap *map) {
         down_sent = true;
     }
   }
-  if (state == KeyState::KEY_DOWN && down_for() > p && !down_sent) {
+  if (state == KeyState::KEY_DOWN && down_for() > HOLD_DELAY && !down_sent) {
     press_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
     down_sent = true;
   }
-  if (down_for() <= p && _map->primary.code != _map->secondary && state == KeyState::KEY_UP_FROM_DOWN) {
+  if (down_for() <= HOLD_DELAY && _map->primary.code != _map->secondary && state == KeyState::KEY_UP_FROM_DOWN) {
     release_gen(_map->secondary, Device::KEYBOARD, true);
   }
 }
