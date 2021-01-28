@@ -21,19 +21,6 @@ void emit_chord(char mod, char leader) {
   Keyboard.release(mod);
 }
 
-bool check_key_down(int column_pin, int row_pin = -1) {
-  if (row_pin != -1) {
-    digitalWrite(row_pin, LOW);
-  }
-
-  bool out = (digitalRead(column_pin) == LOW);
-  if (row_pin != -1) {
-    digitalWrite(row_pin, HIGH);
-  }
-
-  return out;
-}
-
 char check_col_down(int column_pin) {
   if (digitalRead(column_pin) == LOW) {
     return '1';
@@ -68,21 +55,6 @@ void release_gen(char ch, bool is_mouse, bool send_on_release) {
   }
 }
 
-void hold_key(char & state, char & flag, char ch, bool is_mouse = false, bool send_on_release = false) {
-  if (state == '1') {
-      if (flag == '0') {
-        press_gen(ch, is_mouse, send_on_release);
-        flag = '1';
-    }
-  }
-  else {
-    if (flag == '1') {
-      flag = '0';
-      release_gen(ch, is_mouse, send_on_release);
-    }
-  }
-}
-
 void check_key_state(int pin, char & flag) {
   if (digitalRead(pin) == LOW) {
       if (flag == '0') {
@@ -104,21 +76,22 @@ enum KeyState {
 };
 
 class KeyTracker {
-  KeyState state;
-  char code;
-  char hold_code;
   unsigned long downed_at;
   bool was_down;
-  bool dont_emit;
 
   bool currently_down();
+  char _code;
 public:
-  KeyTracker(char code, char hold_code, bool dont_emit);
+  KeyState state;
+  KeyTracker();
   void update(bool is_down);
-  void emit();
+  void emit(char code);
+  unsigned long down_for();
+  bool primary_down();
+  bool up();
 };
 
-KeyTracker::KeyTracker(char code = ' ', char hold_code = ' ', bool dont_emit = false) : state(KeyState::KEY_UNK), code(code), hold_code(hold_code), downed_at(0), was_down(false) {}
+KeyTracker::KeyTracker() : state(KeyState::KEY_UNK), downed_at(0), was_down(false) {}
 
 void KeyTracker::update(bool is_down) {
   if (was_down && state == KeyState::KEY_DOWN_FROM_UP) {state = KeyState::KEY_DOWN;}
@@ -127,19 +100,28 @@ void KeyTracker::update(bool is_down) {
   if (!was_down && is_down) {state = KeyState::KEY_DOWN_FROM_UP; downed_at = millis();}
   if (was_down && !is_down) {state = KeyState::KEY_UP_FROM_DOWN;}
 
-  if (!dont_emit) {
-    emit();
-  }
-
   was_down = is_down;
 }
 
-void KeyTracker::emit() {
-  if (state == KeyState::KEY_DOWN_FROM_UP) {
-    press_gen(code, false, false);
-  }
+bool KeyTracker::primary_down() {
+  return (state == KeyState::KEY_DOWN || state == KeyState::KEY_DOWN_FROM_UP);
+}
+
+bool KeyTracker::up() {
+  return (state == KeyState::KEY_UP || state == KeyState::KEY_UP_FROM_DOWN);
+}
+
+unsigned long KeyTracker::down_for() {
+  return millis() - downed_at;
+}
+
+void KeyTracker::emit(char code) {
   if (state == KeyState::KEY_UP_FROM_DOWN) {
-    release_gen(code, false, false);
+    release_gen(_code, false, false);
+  }
+  if (up()) {_code = code;}
+  if (state == KeyState::KEY_DOWN_FROM_UP) {
+    press_gen(_code, false, false);
   }
 }
 

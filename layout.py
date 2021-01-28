@@ -95,7 +95,7 @@ layout_right = {
 }
 
 layers = {
-    "NAV": {
+    "nav": {
         "key": {"half": "left", "key": [5, 1]},
         "map_right": {
             2: {3: "KEY_END", 4: "KEY_PAGE_UP", 5: "KEY_HOME"},
@@ -110,10 +110,25 @@ layers = {
         },
         "map_left": {},
     },
-    "TMUX": {
-        "key": {"half": "left", "key": [8, 5]},
-        "map_right": {},
+    "nav_right": {
+        "key": {"half": "right", "key": [5, 1]},
+        "map_right": {
+            2: {3: "KEY_END", 4: "KEY_PAGE_UP", 5: "KEY_HOME"},
+            3: {
+                6: "KEY_LEFT_ARROW",
+                5: "KEY_DOWN_ARROW",
+                4: "KEY_UP_ARROW",
+                3: "KEY_RIGHT_ARROW",
+            },
+            4: {4: "KEY_PAGE_DOWN"},
+            6: {5: "KEY_DELETE"},
+        },
         "map_left": {},
-        "chord": {"mod": "KEY_LEFT_CTRL", "leader": "b" }
-    }
+    },
+    # "TMUX": {
+    #     "key": {"half": "left", "key": [8, 5]},
+    #     "map_right": {},
+    #     "map_left": {},
+    #     "chord": {"mod": "KEY_LEFT_CTRL", "leader": "b" }
+    # }
 }
