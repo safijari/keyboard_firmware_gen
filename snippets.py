@@ -2,7 +2,7 @@ preamble = """
 #include "Keyboard.h"
 #include "Mouse.h"
 
-#define HOLD_DELAY 95
+#define HOLD_DELAY 200
 
 """
 
@@ -102,13 +102,13 @@ enum KeyState: byte {
 
 
 class KeyTracker {
-  unsigned long downed_at;
   bool was_down;
   bool down_sent;
 
   bool currently_down();
   IndKeyMap *_map;
 public:
+  unsigned long downed_at;
   KeyState state;
   KeyTracker();
   void update(bool is_down);
@@ -117,6 +117,7 @@ public:
   bool primary_down();
   bool long_down();
   bool up();
+  bool down_longer_than_others(KeyTracker trackers[], int num_trackers);
 };
 
 KeyTracker::KeyTracker() : state(KeyState::KEY_UP), downed_at(0), was_down(false), down_sent(false) {}
@@ -169,6 +170,14 @@ void KeyTracker::emit(IndKeyMap *map) {
   if (down_for() <= HOLD_DELAY && _map->primary.code != _map->secondary && state == KeyState::KEY_UP_FROM_DOWN) {
     release_gen(_map->secondary, Device::KEYBOARD, true);
   }
+}
+
+bool KeyTracker::down_longer_than_others(KeyTracker *trackers, int num_trackers) {
+  for (int i = 0; i < num_trackers; i++) {
+    if (this->up() || trackers[i].up()) {continue;}
+    if (this->downed_at < trackers[i].downed_at + 100) {return true;}
+  }
+  return false;
 }
 
 """

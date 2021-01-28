@@ -117,10 +117,12 @@ void setup() {
         suffix = "" if half == "right" else "_sec"
         r, c = layer["key"]["key"]
         hold = layer["key"]["hold"]
+        le_idx = row_col_to_state_idx[rckey(r, c)]
+        le_name = f"trackers{suffix}[{le_idx}]"
         if not hold:
-            code += f"""if (trackers{suffix}[{row_col_to_state_idx[rckey(r, c)]}].primary_down()) {{"""
+            code += f"""if ({le_name}.primary_down()) {{"""
         else:
-            code += f"""if (trackers{suffix}[{row_col_to_state_idx[rckey(r, c)]}].long_down()) {{"""
+            code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(trackers, {num_keys}) || {le_name}.down_longer_than_others(trackers_sec, {num_keys})) {{"""
         code += f"""
         curr_map = {ln}_map;
         curr_map_sec = {ln}_map_sec;
