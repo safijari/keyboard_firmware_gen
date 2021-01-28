@@ -80,11 +80,11 @@ struct KeyMeta {
 class IndKeyMap {
   public:
   KeyMeta primary;
-  KeyMeta secondary;
-  IndKeyMap() : primary((KeyMeta){255, Device::NONE}), secondary((KeyMeta){255, Device::NONE}) {}
-  IndKeyMap(char code) : primary((KeyMeta){code, Device::KEYBOARD}), secondary((KeyMeta){255, Device::NONE}) {}
-  IndKeyMap(char code, Device dev) : primary((KeyMeta){code, dev}), secondary((KeyMeta){255, Device::NONE}) {}
-  IndKeyMap(char code, Device dev, char code_sec, Device dev_sec) : primary((KeyMeta){code, dev}), secondary((KeyMeta){code_sec, dev_sec}) {}
+  char secondary;
+  IndKeyMap() : primary((KeyMeta){255, Device::NONE}), secondary(255) {}
+  IndKeyMap(char code) : primary((KeyMeta){code, Device::KEYBOARD}), secondary(code) {}
+  IndKeyMap(char code, Device dev) : primary((KeyMeta){code, dev}), secondary(code) {}
+  IndKeyMap(char code, Device dev, char code_sec) : primary((KeyMeta){code, dev}), secondary(code_sec) {}
 };
 
 
@@ -102,18 +102,18 @@ class KeyTracker {
   bool was_down;
 
   bool currently_down();
-  IndKeyMap _map;
+  IndKeyMap *_map;
 public:
   KeyState state;
   KeyTracker();
   void update(bool is_down);
-  void emit(IndKeyMap map);
+  void emit(IndKeyMap *map);
   unsigned long down_for();
   bool primary_down();
   bool up();
 };
 
-KeyTracker::KeyTracker() : state(KeyState::KEY_UNK), downed_at(0), was_down(false) {}
+KeyTracker::KeyTracker() : state(KeyState::KEY_UP), downed_at(0), was_down(false) {}
 
 void KeyTracker::update(bool is_down) {
   if (was_down && state == KeyState::KEY_DOWN_FROM_UP) {state = KeyState::KEY_DOWN;}
@@ -137,13 +137,13 @@ unsigned long KeyTracker::down_for() {
   return millis() - downed_at;
 }
 
-void KeyTracker::emit(IndKeyMap map) {
+void KeyTracker::emit(IndKeyMap *map) {
   if (state == KeyState::KEY_UP_FROM_DOWN) {
-    release_gen(_map.primary.code, map.primary.device == Device::MOUSE, false);
+    release_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
   }
   if (up()) {_map = map;}
   if (state == KeyState::KEY_DOWN_FROM_UP) {
-    press_gen(_map.primary.code, map.primary.device == Device::MOUSE, false);
+    press_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
   }
 }
 

@@ -62,14 +62,6 @@ void setup() {
     pinMode(LED_BUILTIN_RX,INPUT);
     \n"""
 
-    # for tracker_name, layout in zip(["trackers", "trackers_sec"], [layout_primary, layout_secondary]):
-    #     for row_num, cols in layout_primary.items():
-    #         for col_num, mapped_key in cols.items():
-    #             key = sanitize_mapped_key(mapped_key);
-    #             dont_emit = "true" if not key else "false"
-    #             key = key or "' '"
-    #             code += f"""{tracker_name}[{row_col_to_state_idx[rckey(row_num, col_num)]}] = KeyTracker({key}, {key}, {dont_emit}); \n"""
-
     for row_num in row_pin_map:
         code += f"  setup_output({row(row_num)});\n"
 
@@ -84,8 +76,6 @@ void setup() {
     auto curr_map_sec = base_map_sec;
 
     bool process_seconday = false;
-    char to_check;
-    bool is_mouse = false;
     Serial.println(millis());
     """
 
@@ -126,7 +116,7 @@ void setup() {
 """
     for suffix in ["", "_sec"]:
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
-        code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i]);{NL}}}" + NL
+        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i]);{NL}}}" + NL
 
     code += "\n}"
 
