@@ -39,16 +39,20 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
 
         return mapped_key
 
-    code += f"""char flags[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
-    code += f"""char flags_sec[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
     code += f"""KeyTracker trackers[{num_keys}];\n"""
     code += f"""KeyTracker trackers_sec[{num_keys}];\n"""
     code += f"""char state_sec[{num_keys}];\n"""
     code += f"""char state[{num_keys}];\n"""
 
+    def keymap_to_indkeymap(k):
+        dev_suffix = ""
+        if "MOUSE" in k:
+            dev_suffix = ", Device::MOUSE"
+        return "IndKeyMap(" + (sanitize_mapped_key(k) or "NO_OP") + dev_suffix + ")"
+
     for ln in ["base"] + lnames:
-        code += f"""char {ln}_map[] = {{""" + ", ".join([sanitize_mapped_key(k) or "NO_OP" for k in make_state_map(layout_primary, "right", layers.get(ln, {}))[-1]]) + "};\n"
-        code += f"""char {ln}_map_sec[] = {{""" + ", ".join([sanitize_mapped_key(k) or "NO_OP" for k in make_state_map(layout_secondary, "left", layers.get(ln, {}))[-1]]) + "};\n"
+        code += f"""IndKeyMap {ln}_map[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_primary, "right", layers.get(ln, {}))[-1]]) + "};\n"
+        code += f"""IndKeyMap {ln}_map_sec[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_secondary, "right", layers.get(ln, {}))[-1]]) + "};\n"
 
     code += """
 void setup() {

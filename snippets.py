@@ -66,8 +66,29 @@ void check_key_state(int pin, char & flag) {
   }
 }
 
+enum Device: byte {
+  KEYBOARD,
+  MOUSE,
+  NONE,
+};
 
-enum KeyState {
+struct KeyMeta {
+  char code;
+  Device device;
+};
+
+class IndKeyMap {
+  public:
+  KeyMeta primary;
+  KeyMeta secondary;
+  IndKeyMap() : primary((KeyMeta){255, Device::NONE}), secondary((KeyMeta){255, Device::NONE}) {}
+  IndKeyMap(char code) : primary((KeyMeta){code, Device::KEYBOARD}), secondary((KeyMeta){255, Device::NONE}) {}
+  IndKeyMap(char code, Device dev) : primary((KeyMeta){code, dev}), secondary((KeyMeta){255, Device::NONE}) {}
+  IndKeyMap(char code, Device dev, char code_sec, Device dev_sec) : primary((KeyMeta){code, dev}), secondary((KeyMeta){code_sec, dev_sec}) {}
+};
+
+
+enum KeyState: byte {
     KEY_DOWN,
     KEY_UP,
     KEY_UP_FROM_DOWN,
@@ -75,17 +96,18 @@ enum KeyState {
     KEY_UNK
 };
 
+
 class KeyTracker {
   unsigned long downed_at;
   bool was_down;
 
   bool currently_down();
-  char _code;
+  IndKeyMap _map;
 public:
   KeyState state;
   KeyTracker();
   void update(bool is_down);
-  void emit(char code);
+  void emit(IndKeyMap map);
   unsigned long down_for();
   bool primary_down();
   bool up();
@@ -115,13 +137,13 @@ unsigned long KeyTracker::down_for() {
   return millis() - downed_at;
 }
 
-void KeyTracker::emit(char code) {
+void KeyTracker::emit(IndKeyMap map) {
   if (state == KeyState::KEY_UP_FROM_DOWN) {
-    release_gen(_code, false, false);
+    release_gen(_map.primary.code, map.primary.device == Device::MOUSE, false);
   }
-  if (up()) {_code = code;}
+  if (up()) {_map = map;}
   if (state == KeyState::KEY_DOWN_FROM_UP) {
-    press_gen(_code, false, false);
+    press_gen(_map.primary.code, map.primary.device == Device::MOUSE, false);
   }
 }
 
