@@ -100,6 +100,7 @@ enum KeyState: byte {
 class KeyTracker {
   unsigned long downed_at;
   bool was_down;
+  bool down_sent;
 
   bool currently_down();
   IndKeyMap *_map;
@@ -113,7 +114,7 @@ public:
   bool up();
 };
 
-KeyTracker::KeyTracker() : state(KeyState::KEY_UP), downed_at(0), was_down(false) {}
+KeyTracker::KeyTracker() : state(KeyState::KEY_UP), downed_at(0), was_down(false), down_sent(false) {}
 
 void KeyTracker::update(bool is_down) {
   if (was_down && state == KeyState::KEY_DOWN_FROM_UP) {state = KeyState::KEY_DOWN;}
@@ -123,6 +124,9 @@ void KeyTracker::update(bool is_down) {
   if (was_down && !is_down) {state = KeyState::KEY_UP_FROM_DOWN;}
 
   was_down = is_down;
+  if (primary_down()) {
+    Serial.println(down_for());
+  }
 }
 
 bool KeyTracker::primary_down() {
@@ -138,12 +142,24 @@ unsigned long KeyTracker::down_for() {
 }
 
 void KeyTracker::emit(IndKeyMap *map) {
-  if (state == KeyState::KEY_UP_FROM_DOWN) {
-    release_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
+  auto p = 95;
+  if (state == KeyState::KEY_UP) {_map = map;}
+  if (_map->primary.code == _map->secondary || down_for() > p) {
+    if (state == KeyState::KEY_UP_FROM_DOWN) {
+        release_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
+        down_sent = false;
+    }
+    if (state == KeyState::KEY_DOWN_FROM_UP && !down_sent) {
+        press_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
+        down_sent = true;
+    }
   }
-  if (up()) {_map = map;}
-  if (state == KeyState::KEY_DOWN_FROM_UP) {
+  if (state == KeyState::KEY_DOWN && down_for() > p && !down_sent) {
     press_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
+    down_sent = true;
+  }
+  if (down_for() <= p && _map->primary.code != _map->secondary && state == KeyState::KEY_UP_FROM_DOWN) {
+    release_gen(_map->secondary, Device::KEYBOARD, true);
   }
 }
 

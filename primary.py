@@ -45,10 +45,17 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
     code += f"""char state[{num_keys}];\n"""
 
     def keymap_to_indkeymap(k):
+        if isinstance(k, str):
+            k = [k]
         dev_suffix = ""
-        if "MOUSE" in k:
+        sec_suffix = ""
+        if "MOUSE" in k[0]:
             dev_suffix = ", Device::MOUSE"
-        return "IndKeyMap(" + (sanitize_mapped_key(k) or "NO_OP") + dev_suffix + ")"
+        if len(k) == 2:
+            if not dev_suffix:
+                dev_suffix = ", Device::KEYBOARD"
+            sec_suffix = ", " + sanitize_mapped_key(k[1])
+        return "IndKeyMap(" + (sanitize_mapped_key(k[0]) or "NO_OP") + dev_suffix + sec_suffix + ")"
 
     for ln in ["base"] + lnames:
         code += f"""IndKeyMap {ln}_map[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_primary, "right", layers.get(ln, {}))[-1]]) + "};\n"
@@ -76,16 +83,16 @@ void setup() {
     auto curr_map_sec = base_map_sec;
 
     bool process_seconday = false;
-    Serial.println(millis());
+    //Serial.println(millis());
     """
 
     code += f"""
     if (Serial1.available()) {{
         int tots = Serial1.readBytesUntil('{nl}', state_sec, {num_keys_sec} + 10);
         if (tots == {num_keys_sec}) {{
-            Serial.println(tots);
-            Serial.write(state_sec, tots);
-            Serial.println();
+            //Serial.println(tots);
+            //Serial.write(state_sec, tots);
+            //Serial.println();
             process_seconday = true;
         }}
         else {{
