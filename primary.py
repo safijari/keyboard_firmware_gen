@@ -5,13 +5,14 @@ from snippets import preamble, functions
 debug = False
 nl = '\\n'
 
-def generate_code_primary(layout, layout_secondary, layers):
+def generate_code_primary(layout_primary, layout_secondary, layers):
 
     code = ""
 
     code += preamble + "\n"
 
     code += f"#define DEBUG {int(debug)}\n"
+    code += f"#define NO_OP 255\n"
 
     for row_num, pin in row_pin_map.items():
         code += f"#define {row(row_num)} {pin}\n"
@@ -21,12 +22,44 @@ def generate_code_primary(layout, layout_secondary, layers):
 
     code += functions + "\n"
 
-    num_keys, row_col_to_state_idx = make_state_map(layout)
-    num_keys_sec, row_col_to_state_idx_sec = make_state_map(layout_secondary)
+    num_keys, row_col_to_state_idx, flat_map = make_state_map(layout_primary, "right")
+    num_keys_sec, row_col_to_state_idx_sec, flat_map_sec = make_state_map(layout_secondary, "left")
 
-    code += f"""char flags[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
-    code += """char state_sec[100];\n"""
-    code += f"""char flags_sec[] = {{ {','.join(["'0'"]*num_keys)} }};\n"""
+    lnames = list(layers.keys())
+
+    def sanitize_mapped_key(mapped_key):
+        if mapped_key in lnames or "LAYER" in mapped_key or "NO_OP" in mapped_key:
+            return
+        if mapped_key in ["\'", "\\"]:
+            mapped_key = "\\" + mapped_key
+            mapped_key = f"'{mapped_key}'"
+
+        if len(mapped_key) == 1:
+            mapped_key = f"'{mapped_key}'"
+
+        return mapped_key
+
+    code += f"""KeyTracker trackers[{num_keys}];\n"""
+    code += f"""KeyTracker trackers_sec[{num_keys}];\n"""
+    code += f"""char state_sec[{num_keys}];\n"""
+    code += f"""char state[{num_keys}];\n"""
+
+    def keymap_to_indkeymap(k):
+        if isinstance(k, str):
+            k = [k]
+        dev_suffix = ""
+        sec_suffix = ""
+        if "MOUSE" in k[0]:
+            dev_suffix = ", Device::MOUSE"
+        if len(k) == 2:
+            if not dev_suffix:
+                dev_suffix = ", Device::KEYBOARD"
+            sec_suffix = ", " + (sanitize_mapped_key(k[1]) or "NO_OP") 
+        return "IndKeyMap(" + (sanitize_mapped_key(k[0]) or "NO_OP") + dev_suffix + sec_suffix + ")"
+
+    for ln in ["base"] + lnames:
+        code += f"""IndKeyMap {ln}_map[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_primary, "right", layers.get(ln, {}))[-1]]) + "};\n"
+        code += f"""IndKeyMap {ln}_map_sec[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_secondary, "right", layers.get(ln, {}))[-1]]) + "};\n"
 
     code += """
 void setup() {
@@ -45,20 +78,22 @@ void setup() {
     code += "  Keyboard.begin();\n delay(1300);\n}"
 
     code += """\nvoid loop() {
+
+    auto at_least_one_downed = false;
+    auto curr_map = base_map;
+    auto curr_map_sec = base_map_sec;
+
     bool process_seconday = false;
-    char to_check;
-    char key_state = '0';
-    bool is_mouse = false;
-    Serial.println(millis());
+    //Serial.println(millis());
     """
 
     code += f"""
     if (Serial1.available()) {{
         int tots = Serial1.readBytesUntil('{nl}', state_sec, {num_keys_sec} + 10);
         if (tots == {num_keys_sec}) {{
-            Serial.println(tots);
-            Serial.write(state_sec, tots);
-            Serial.println();
+            //Serial.println(tots);
+            //Serial.write(state_sec, tots);
+            //Serial.println();
             process_seconday = true;
         }}
         else {{
@@ -67,87 +102,42 @@ void setup() {
     }}
     """
 
-
-    lnames = list(layers.keys())
-
-    for ln in lnames:
-        code += f"int layer_{ln}_down = 0;\n"
-        half = layers[ln]["key"]["half"]
-        r, c = layers[ln]["key"]["key"]
-        if half == "right":
-            code += f"""
-    if (check_key_down({col_pin_map[c]}, {row_pin_map[r]})) {{
-        layer_{ln}_down = 1;
-    }}
-            """
-        else:
-            code += f"""
-    if (state_sec[{row_col_to_state_idx_sec[rckey(r, c)]}] == '1') {{
-        layer_{ln}_down = 1;
-    }}
-            """
-
-    def sanitize_mapped_key(mapped_key):
-        if mapped_key in lnames or "LAYER" in mapped_key or "NO_OP" in mapped_key:
-            return
-        if mapped_key in ["\'", "\\"]:
-            mapped_key = "\\" + mapped_key
-            mapped_key = f"'{mapped_key}'"
-
-        if len(mapped_key) == 1:
-            mapped_key = f"'{mapped_key}'"
-
-        return mapped_key
-
-    for row_num, cols in layout.items():
+    for row_num, cols in layout_primary.items():
         code += f"\n  digitalWrite({row(row_num)}, LOW);\n"
         for col_num, mapped_key in cols.items():
-            is_mouse = "false"
-            if "MOUSE" in mapped_key:
-                is_mouse = "true"
-            mapped_key = sanitize_mapped_key(mapped_key)
-            if not mapped_key:
-                continue
-            code += f"  to_check = {mapped_key};\n"
-            code += f"  is_mouse = {is_mouse};\n"
-            for ln in lnames:
-                new_key = layers[ln]["map_right"].get(row_num, {}).get(col_num, None)
-                if not new_key:
-                    continue
-                code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            code += f"  key_state = check_key_down({col(col_num)})? '1' : '0';\n"
-            code += f"  if (key_state == '1' && flags[{row_col_to_state_idx[rckey(row_num, col_num)]}] == '0') " + "{"
-            for ln in lnames:
-                if "chord" in layers[ln]:
-                    code += f" if (layer_{ln}_down == 1)" + "{"
-                    code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
-            code += f"  hold_key(key_state, flags[{row_col_to_state_idx[rckey(row_num, col_num)]}], to_check, is_mouse);\n\n"
-
+            code += f"  state[{row_col_to_state_idx_sec[rckey(row_num, col_num)]}] = check_col_down({col(col_num)});\n"
         code += f"  digitalWrite({row(row_num)}, HIGH);\n\n"
 
-    for row_num, cols in layout_secondary.items():
-        for col_num, mapped_key in cols.items():
-            is_mouse = "false"
-            if "MOUSE" in mapped_key:
-                is_mouse = "true"
-            mapped_key = sanitize_mapped_key(mapped_key)
-            if not mapped_key:
-                continue
-            code += f"  to_check = {mapped_key};\n"
-            code += f"  is_mouse = {is_mouse};\n"
-            for ln in lnames:
-                new_key = layers[ln]["map_left"].get(row_num, {}).get(col_num, None)
-                if not new_key:
-                    continue
-                code += f"  if (layer_{ln}_down == 1) {{to_check = {new_key};}}\n"
-            idx = row_col_to_state_idx_sec[rckey(row_num, col_num)]
-            code += f"  key_state = state_sec[{idx}];\n"
-            code += f"  if (key_state == '1' && flags_sec[{idx}] == '0') " + "{"
-            for ln in lnames:
-                if "chord" in layers[ln]:
-                    code += f" if (layer_{ln}_down == 1)" + "{"
-                    code += f"emit_chord({layers[ln]['chord']['mod']}, \'{layers[ln]['chord']['leader']}\');" + "}}"
-            code += f"  hold_key(state_sec[{idx}], flags_sec[{idx}], to_check, is_mouse);\n\n"
+
+    for tracker_name, state_name in zip(["trackers", "trackers_sec"], ["state", "state_sec"]):
+        code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
+        code += f"  at_least_one_downed = (at_least_one_downed || {tracker_name}[i].update({state_name}[i] == '1'));{NL}}}" + NL
+
+    for ln, layer in layers.items():
+        half = layer["key"]["half"]
+        suffix = "" if half == "right" else "_sec"
+        r, c = layer["key"]["key"]
+        hold = layer["key"]["hold"]
+        le_idx = row_col_to_state_idx[rckey(r, c)]
+        le_name = f"trackers{suffix}[{le_idx}]"
+        if not hold:
+            code += f"""if ({le_name}.primary_down()) {{"""
+        else:
+            code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(at_least_one_downed)) {{"""
+        code += f"""
+        curr_map = {ln}_map;
+        curr_map_sec = {ln}_map_sec;
+}}
+"""
+    for suffix in ["", "_sec"]:
+        code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
+        code += f"if(curr_map{suffix}[i].primary.code != curr_map{suffix}[i].secondary) {{" + NL
+        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
+
+    for suffix in ["", "_sec"]:
+        code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
+        code += f"if(curr_map{suffix}[i].primary.code == curr_map{suffix}[i].secondary) {{" + NL
+        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
 
     code += "\n}"
 

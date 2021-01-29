@@ -75,11 +75,11 @@ KEY_F24
 layout_left = {
     1: {1: "=", 2: "1", 3: "2", 4: "3", 5: "4", 6: "5",},
     2: {1: "KEY_TAB", 2: "q", 3: "w", 4: "e", 5: "r", 6: "t",},
-    3: {1: "KEY_LEFT_GUI", 2: "a", 3: "s", 4: "d", 5: "f", 6: "g",},
+    3: {1: ["KEY_LEFT_GUI", "KEY_ESC"], 2: "a", 3: "s", 4: "d", 5: "f", 6: "g",},
     4: {1: "KEY_LEFT_SHIFT", 2: "z", 3: "x", 4: "c", 5: "v", 6: "b",},
     5: {1: "LAYER", 2: "`", 3: "MOUSE_MIDDLE", 4: "MOUSE_LEFT", 5: "MOUSE_RIGHT",},
     6: {5: "KEY_BACKSPACE", 6: "KEY_LEFT_CTRL",},
-    7: {5: "KEY_ESC", 6: "LAYER",},
+    7: {5: ["LAYER", "KEY_ESC"], 6: "LAYER",},
     8: {5: "LAYER", 6: "KEY_LEFT_ALT",},
 }
 
@@ -95,8 +95,8 @@ layout_right = {
 }
 
 layers = {
-    "NAV": {
-        "key": {"half": "left", "key": [5, 1]},
+    "nav": {
+        "key": {"half": "left", "key": [7, 5], "hold": True},
         "map_right": {
             2: {3: "KEY_END", 4: "KEY_PAGE_UP", 5: "KEY_HOME"},
             3: {
@@ -110,10 +110,10 @@ layers = {
         },
         "map_left": {},
     },
-    "TMUX": {
-        "key": {"half": "left", "key": [8, 5]},
-        "map_right": {},
-        "map_left": {},
-        "chord": {"mod": "KEY_LEFT_CTRL", "leader": "b" }
-    }
+    # "TMUX": {
+    #     "key": {"half": "left", "key": [8, 5]},
+    #     "map_right": {},
+    #     "map_left": {},
+    #     "chord": {"mod": "KEY_LEFT_CTRL", "leader": "b" }
+    # }
 }
