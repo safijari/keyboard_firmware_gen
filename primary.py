@@ -131,7 +131,13 @@ void setup() {
 """
     for suffix in ["", "_sec"]:
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
-        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i], at_least_one_downed);{NL}}}" + NL
+        code += f"if(curr_map{suffix}[i].primary.code != curr_map{suffix}[i].secondary) {{" + NL
+        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
+
+    for suffix in ["", "_sec"]:
+        code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
+        code += f"if(curr_map{suffix}[i].primary.code == curr_map{suffix}[i].secondary) {{" + NL
+        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
 
     code += "\n}"
 
