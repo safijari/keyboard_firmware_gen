@@ -59,7 +59,7 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
 
     for ln in ["base"] + lnames:
         code += f"""IndKeyMap {ln}_map[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_primary, "right", layers.get(ln, {}))[-1]]) + "};\n"
-        code += f"""IndKeyMap {ln}_map_sec[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_secondary, "right", layers.get(ln, {}))[-1]]) + "};\n"
+        code += f"""IndKeyMap {ln}_map_sec[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_secondary, "left", layers.get(ln, {}))[-1]]) + "};\n"
 
     code += """
 void setup() {

@@ -75,7 +75,7 @@ KEY_F24
 layout_left = {
     1: {1: "=", 2: "1", 3: "2", 4: "3", 5: "4", 6: "5",},
     2: {1: "KEY_TAB", 2: "q", 3: "w", 4: "e", 5: "r", 6: "t",},
-    3: {1: ["KEY_LEFT_GUI", "KEY_ESC"], 2: "a", 3: "s", 4: "d", 5: "f", 6: "g",},
+    3: {1: ["KEY_LEFT_GUI", "KEY_TAB"], 2: "a", 3: "s", 4: "d", 5: "f", 6: "g",},
     4: {1: "KEY_LEFT_SHIFT", 2: "z", 3: "x", 4: "c", 5: "v", 6: "b",},
     5: {1: "LAYER", 2: "`", 3: "MOUSE_MIDDLE", 4: "MOUSE_LEFT", 5: "MOUSE_RIGHT",},
     6: {5: "KEY_BACKSPACE", 6: "KEY_LEFT_CTRL",},
@@ -88,7 +88,7 @@ layout_right = {
     2: {1: "\\", 2: "p", 3: "o", 4: "i", 5: "u", 6: "y",},
     3: {1: "'", 2: ";", 3: "l", 4: "k", 5: "j", 6: "h",},
     4: {1: "KEY_RIGHT_SHIFT", 2: "/", 3: ".", 4: ",", 5: "m", 6: "n",},
-    5: {1: "KEY_RIGHT_GUI", 2: "]", 3: "[", 4: "NO_OP", 5: "NO_OP",},
+    5: {1: "LAYER", 2: "]", 3: "[", 4: "NO_OP", 5: "NO_OP",},
     6: {5: " ", 6: "KEY_RIGHT_CTRL",},
     7: {5: "KEY_RETURN", 6: "KEY_RIGHT_GUI",},
     8: {5: "KEY_END", 6: "KEY_RIGHT_ALT",},
@@ -109,6 +109,15 @@ layers = {
             6: {5: "KEY_DELETE"},
         },
         "map_left": {},
+    },
+    "fn": {
+        "key": {"half": "right", "key": [5, 1], "hold": True},
+        "map_left": {
+            1: {1: "KEY_F11", 2: "KEY_F1", 3: "KEY_F2", 4: "KEY_F3", 5: "KEY_F4", 6: "KEY_F5"},
+        },
+        "map_right": {
+            1: {1: "KEY_F12", 2: "KEY_F10", 3: "KEY_F9", 4: "KEY_F8", 5: "KEY_F7", 6: "KEY_F6"},
+        },
     },
     # "TMUX": {
     #     "key": {"half": "left", "key": [8, 5]},
