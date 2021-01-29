@@ -111,18 +111,18 @@ public:
   unsigned long downed_at;
   KeyState state;
   KeyTracker();
-  void update(bool is_down);
-  void emit(IndKeyMap *map);
+  bool update(bool is_down);
+  void emit(IndKeyMap *map, bool at_least_one_downed);
   unsigned long down_for();
   bool primary_down();
   bool long_down();
   bool up();
-  bool down_longer_than_others(KeyTracker trackers[], int num_trackers);
+  bool down_longer_than_others(bool at_least_one_downed);
 };
 
 KeyTracker::KeyTracker() : state(KeyState::KEY_UP), downed_at(0), was_down(false), down_sent(false) {}
 
-void KeyTracker::update(bool is_down) {
+bool KeyTracker::update(bool is_down) {
   if (was_down && state == KeyState::KEY_DOWN_FROM_UP) {state = KeyState::KEY_DOWN;}
   if (!was_down && state == KeyState::KEY_UP_FROM_DOWN) {state = KeyState::KEY_UP;}
 
@@ -133,6 +133,8 @@ void KeyTracker::update(bool is_down) {
   if (primary_down()) {
     Serial.println(down_for());
   }
+  
+  return (KeyState::KEY_DOWN_FROM_UP == state);
 }
 
 bool KeyTracker::primary_down() {
@@ -151,8 +153,8 @@ unsigned long KeyTracker::down_for() {
   return millis() - downed_at;
 }
 
-void KeyTracker::emit(IndKeyMap *map) {
-  if (state == KeyState::KEY_UP) {_map = map;}
+void KeyTracker::emit(IndKeyMap *map, bool at_least_one_downed) {
+  if (!down_sent) {_map = map;}
   if (_map->primary.code == _map->secondary || down_for() > HOLD_DELAY) {
     if (state == KeyState::KEY_UP_FROM_DOWN) {
         release_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
@@ -172,12 +174,9 @@ void KeyTracker::emit(IndKeyMap *map) {
   }
 }
 
-bool KeyTracker::down_longer_than_others(KeyTracker *trackers, int num_trackers) {
-  for (int i = 0; i < num_trackers; i++) {
-    if (this->up() || trackers[i].up()) {continue;}
-    if (this->downed_at < trackers[i].downed_at + 100) {return true;}
-  }
-  return false;
+bool KeyTracker::down_longer_than_others(bool at_least_one_downed) {
+  if (state == KeyState::KEY_DOWN_FROM_UP || this->up()) {return false;}
+  return at_least_one_downed;
 }
 
 """

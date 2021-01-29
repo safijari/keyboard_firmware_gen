@@ -79,6 +79,7 @@ void setup() {
 
     code += """\nvoid loop() {
 
+    auto at_least_one_downed = false;
     auto curr_map = base_map;
     auto curr_map_sec = base_map_sec;
 
@@ -110,7 +111,7 @@ void setup() {
 
     for tracker_name, state_name in zip(["trackers", "trackers_sec"], ["state", "state_sec"]):
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
-        code += f"  {tracker_name}[i].update({state_name}[i] == '1');{NL}}}" + NL
+        code += f"  at_least_one_downed = (at_least_one_downed || {tracker_name}[i].update({state_name}[i] == '1'));{NL}}}" + NL
 
     for ln, layer in layers.items():
         half = layer["key"]["half"]
@@ -122,7 +123,7 @@ void setup() {
         if not hold:
             code += f"""if ({le_name}.primary_down()) {{"""
         else:
-            code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(trackers, {num_keys}) || {le_name}.down_longer_than_others(trackers_sec, {num_keys})) {{"""
+            code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(at_least_one_downed)) {{"""
         code += f"""
         curr_map = {ln}_map;
         curr_map_sec = {ln}_map_sec;
@@ -130,7 +131,7 @@ void setup() {
 """
     for suffix in ["", "_sec"]:
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
-        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i]);{NL}}}" + NL
+        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i], at_least_one_downed);{NL}}}" + NL
 
     code += "\n}"
 
