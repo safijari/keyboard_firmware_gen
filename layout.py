@@ -98,15 +98,24 @@ layers = {
     "nav": {
         "key": {"half": "left", "key": [7, 5], "hold": True},
         "map_right": {
-            2: {3: "KEY_END", 4: "KEY_PAGE_UP", 5: "KEY_HOME"},
+            2: {
+                3: "KEY_END",
+                6: "KEY_HOME",
+                4: "KEY_PAGE_UP",
+                5: "KEY_PAGE_DOWN",
+            },
             3: {
                 6: "KEY_LEFT_ARROW",
                 5: "KEY_DOWN_ARROW",
                 4: "KEY_UP_ARROW",
                 3: "KEY_RIGHT_ARROW",
             },
-            4: {4: "KEY_PAGE_DOWN"},
-            6: {5: "KEY_DELETE"},
+            4: {
+                6: {"device": "CTRL", "code": "KEY_LEFT_ARROW"},
+                5: {"device": "ALT", "code": "KEY_LEFT_ARROW"},
+                4: {"device": "ALT", "code": "KEY_RIGHT_ARROW"},
+                3: {"device": "CTRL", "code": "KEY_RIGHT_ARROW"},
+            },
         },
         "map_left": {},
     },

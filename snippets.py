@@ -8,6 +8,20 @@ preamble = """
 
 functions = """
 
+enum Device: byte {
+  KEYBOARD,
+  CTRL,
+  ALT,
+  MOUSE,
+  NONE,
+};
+
+struct KeyMeta {
+  char code;
+  Device device;
+};
+
+
 void setup_input(int pin) {
   pinMode(pin, INPUT_PULLUP);
 }
@@ -30,10 +44,16 @@ char check_col_down(int column_pin) {
   return '0';
 }
 
-void press_gen(char ch, bool is_mouse, bool send_on_release) {
+void press_gen(char ch, Device device, bool send_on_release) {
   if (ch == NO_OP) {return;}
   if (send_on_release) {return;}
-  if (!is_mouse) {
+  if (device == Device::KEYBOARD || device == Device::CTRL || device == Device::ALT) {
+    if (device == Device::CTRL) {
+        Keyboard.press(KEY_LEFT_CTRL);
+    }
+    if (device == Device::ALT) {
+        Keyboard.press(KEY_LEFT_ALT);
+    }
     Keyboard.press(ch);
   }
   else {
@@ -41,10 +61,16 @@ void press_gen(char ch, bool is_mouse, bool send_on_release) {
   }
 }
 
-void release_gen(char ch, bool is_mouse, bool send_on_release) {
+void release_gen(char ch, Device device, bool send_on_release) {
   if (ch == NO_OP) {return;}
-  if (!is_mouse) {
+  if (device == Device::KEYBOARD || device == Device::CTRL || device == Device::ALT) {
     if (!send_on_release) {
+        if (device == Device::CTRL) {
+            Keyboard.release(KEY_LEFT_CTRL);
+        }
+        if (device == Device::ALT) {
+            Keyboard.release(KEY_LEFT_ALT);
+        }
         Keyboard.release(ch);
     } else {
         Keyboard.write(ch);
@@ -69,17 +95,6 @@ void check_key_state(int pin, char & flag) {
     flag = '0';
   }
 }
-
-enum Device: byte {
-  KEYBOARD,
-  MOUSE,
-  NONE,
-};
-
-struct KeyMeta {
-  char code;
-  Device device;
-};
 
 class IndKeyMap {
   public:
@@ -154,17 +169,17 @@ void KeyTracker::emit(IndKeyMap *map, bool at_least_one_downed) {
   if (!down_sent) {_map = map;}
   if (_map->primary.code == _map->secondary || down_for() > HOLD_DELAY || down_sent) {
     if (state == KeyState::KEY_UP_FROM_DOWN) {
-        release_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
+        release_gen(_map->primary.code, map->primary.device, false);
         down_sent = false;
         return;
     }
     if (state == KeyState::KEY_DOWN_FROM_UP && !down_sent) {
-        press_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
+        press_gen(_map->primary.code, map->primary.device, false);
         down_sent = true;
     }
   }
   if (state == KeyState::KEY_DOWN && (down_for() > HOLD_DELAY || at_least_one_downed) && !down_sent) {
-    press_gen(_map->primary.code, map->primary.device == Device::MOUSE, false);
+    press_gen(_map->primary.code, map->primary.device, false);
     down_sent = true;
     Serial.println(millis());
     Serial.println((int)_map->primary.code);

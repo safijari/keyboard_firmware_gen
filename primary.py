@@ -45,9 +45,12 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
     code += f"""char state[{num_keys}];\n"""
 
     def keymap_to_indkeymap(k):
+        dev_suffix = ""
         if isinstance(k, str):
             k = [k]
-        dev_suffix = ""
+        if isinstance(k, dict):
+            dev_suffix = ", Device::" + k["device"]
+            k = [k["code"]]
         sec_suffix = ""
         if "MOUSE" in k[0]:
             dev_suffix = ", Device::MOUSE"
