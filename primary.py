@@ -44,13 +44,17 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
     code += f"""char state_sec[{num_keys}];\n"""
     code += f"""char state[{num_keys}];\n"""
 
-    def keymap_to_indkeymap(k):
+    def keymap_to_indkeymap(k, device_override=None):
         dev_suffix = ""
         if isinstance(k, str):
             k = [k]
         if isinstance(k, dict):
             dev_suffix = ", Device::" + k["device"]
             k = [k["code"]]
+
+        if not dev_suffix and device_override:
+            dev_suffix = ", Device::" + device_override
+
         sec_suffix = ""
         if "MOUSE" in k[0]:
             dev_suffix = ", Device::MOUSE"
@@ -61,8 +65,10 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
         return "IndKeyMap(" + (sanitize_mapped_key(k[0]) or "NO_OP") + dev_suffix + sec_suffix + ")"
 
     for ln in ["base"] + lnames:
-        code += f"""IndKeyMap {ln}_map[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_primary, "right", layers.get(ln, {}))[-1]]) + "};\n"
-        code += f"""IndKeyMap {ln}_map_sec[] = {{""" + ", ".join([keymap_to_indkeymap(k) for k in make_state_map(layout_secondary, "left", layers.get(ln, {}))[-1]]) + "};\n"
+        layer = layers.get(ln, {})
+        device_override = layer.get("device_override", None)
+        code += f"""IndKeyMap {ln}_map[] = {{""" + ", ".join([keymap_to_indkeymap(k, device_override) for k in make_state_map(layout_primary, "right", layer)[-1]]) + "};\n"
+        code += f"""IndKeyMap {ln}_map_sec[] = {{""" + ", ".join([keymap_to_indkeymap(k, device_override) for k in make_state_map(layout_secondary, "left", layer)[-1]]) + "};\n"
 
     code += """
 void setup() {
@@ -118,18 +124,21 @@ void setup() {
 
     for ln, layer in layers.items():
         half = layer["key"]["half"]
-        suffix = "" if half == "right" else "_sec"
-        r, c = layer["key"]["key"]
-        hold = layer["key"]["hold"]
-        le_idx = row_col_to_state_idx[rckey(r, c)]
-        le_name = f"trackers{suffix}[{le_idx}]"
-        if not hold:
-            code += f"""if ({le_name}.primary_down()) {{"""
-        else:
-            code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(at_least_one_downed)) {{"""
-        code += f"""
-        curr_map = {ln}_map;
-        curr_map_sec = {ln}_map_sec;
+        suffixes = [""] if half == "right" else ["_sec"]
+        if half == "both":
+            suffixes = ["", "_sec"]
+        for suffix in suffixes:
+            r, c = layer["key"]["key"]
+            hold = layer["key"]["hold"]
+            le_idx = row_col_to_state_idx[rckey(r, c)]
+            le_name = f"trackers{suffix}[{le_idx}]"
+            if not hold:
+                code += f"""if ({le_name}.primary_down()) {{"""
+            else:
+                code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(at_least_one_downed)) {{"""
+            code += f"""
+            curr_map = {ln}_map;
+            curr_map_sec = {ln}_map_sec;
 }}
 """
     for suffix in ["", "_sec"]:
