@@ -91,7 +91,7 @@ layout_right = {
     5: {1: "LAYER", 2: "]", 3: "[", 4: "NO_OP", 5: "NO_OP",},
     6: {5: " ", 6: "KEY_RIGHT_CTRL",},
     7: {5: "KEY_RETURN", 6: "KEY_RIGHT_GUI",},
-    8: {5: "KEY_END", 6: "KEY_RIGHT_ALT",},
+    8: {5: "LAYER", 6: "KEY_RIGHT_ALT",},
 }
 
 layers = {
@@ -129,17 +129,17 @@ layers = {
         },
     },
     "tmuxi3": {
-        "key": {"half": "both", "key": [2, 1], "hold": True},
+        "key": {"half": "left", "key": [2, 1], "hold": True},
         "device_override": "SUPER_SHIFT",
         "map_left": {
         },
         "map_right": {
         },
     },
-    # "TMUX": {
-    #     "key": {"half": "left", "key": [8, 5]},
-    #     "map_right": {},
-    #     "map_left": {},
-    #     "chord": {"mod": "KEY_LEFT_CTRL", "leader": "b" }
-    # }
+    "TMUX": {
+        "key": {"half": "both", "key": [8, 5], "hold": True},
+        "device_override": "CTRL_B",
+        "map_right": {},
+        "map_left": {},
+    }
 }

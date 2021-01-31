@@ -13,6 +13,7 @@ enum Device: byte {
   CTRL,
   ALT,
   SUPER_SHIFT,
+  CTRL_B,
   MOUSE,
   NONE,
 };
@@ -44,10 +45,16 @@ char check_col_down(int column_pin) {
   return '0';
 }
 
+bool is_keyboard(Device device) {
+  if (device == Device::KEYBOARD || device == Device::CTRL || device == Device::ALT || device == Device::SUPER_SHIFT || device == Device::CTRL_B) { return true; }
+  return false;
+}
+
+
 void press_gen(char ch, Device device, bool send_on_release) {
   if (ch == NO_OP) {return;}
   if (send_on_release) {return;}
-  if (device == Device::KEYBOARD || device == Device::CTRL || device == Device::ALT || device == Device::SUPER_SHIFT) {
+  if (is_keyboard(device)) {
     if (device == Device::CTRL) {
         Keyboard.press(KEY_LEFT_CTRL);
     }
@@ -58,6 +65,11 @@ void press_gen(char ch, Device device, bool send_on_release) {
         Keyboard.press(KEY_LEFT_GUI);
         Keyboard.press(KEY_LEFT_SHIFT);
     }
+    if (device == Device::CTRL_B && (int)ch > 31 && (int)ch < 128) {
+        Keyboard.press(KEY_LEFT_CTRL);
+        Keyboard.write('b');
+        Keyboard.release(KEY_LEFT_CTRL);
+    }
     Keyboard.press(ch);
   }
   else {
@@ -67,7 +79,7 @@ void press_gen(char ch, Device device, bool send_on_release) {
 
 void release_gen(char ch, Device device, bool send_on_release) {
   if (ch == NO_OP) {return;}
-  if (device == Device::KEYBOARD || device == Device::CTRL || device == Device::ALT || device == Device::SUPER_SHIFT) {
+  if (is_keyboard(device)) {
     if (!send_on_release) {
         if (device == Device::CTRL) {
             Keyboard.release(KEY_LEFT_CTRL);
