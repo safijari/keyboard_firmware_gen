@@ -128,14 +128,14 @@ layers = {
             1: {1: "KEY_F12", 2: "KEY_F10", 3: "KEY_F9", 4: "KEY_F8", 5: "KEY_F7", 6: "KEY_F6"},
         },
     },
-    # "tmuxi3": {
-    #     "key": {"half": "right", "key": [2, 1], "hold": True},
-    #     # "device_override": "SUPER_SHIFT",
-    #     "map_left": {
-    #     },
-    #     "map_right": {
-    #     },
-    # },
+    "tmuxi3": {
+        "key": {"half": "both", "key": [2, 1], "hold": True},
+        "device_override": "SUPER_SHIFT",
+        "map_left": {
+        },
+        "map_right": {
+        },
+    },
     # "TMUX": {
     #     "key": {"half": "left", "key": [8, 5]},
     #     "map_right": {},

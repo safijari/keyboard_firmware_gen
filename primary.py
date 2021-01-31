@@ -69,6 +69,9 @@ def generate_code_primary(layout_primary, layout_secondary, layers):
         device_override = layer.get("device_override", None)
         code += f"""IndKeyMap {ln}_map[] = {{""" + ", ".join([keymap_to_indkeymap(k, device_override) for k in make_state_map(layout_primary, "right", layer)[-1]]) + "};\n"
         code += f"""IndKeyMap {ln}_map_sec[] = {{""" + ", ".join([keymap_to_indkeymap(k, device_override) for k in make_state_map(layout_secondary, "left", layer)[-1]]) + "};\n"
+        code += f"""IndKeyMap curr_map[] = {{""" + ", ".join([keymap_to_indkeymap(k, device_override) for k in make_state_map(layout_primary, "right", layer)[-1]]) + "};\n"
+        code += f"""IndKeyMap curr_map_sec[] = {{""" + ", ".join([keymap_to_indkeymap(k, device_override) for k in make_state_map(layout_secondary, "left", layer)[-1]]) + "};\n"
+        break
 
     code += """
 void setup() {
@@ -86,11 +89,20 @@ void setup() {
 
     code += "  Keyboard.begin();\n delay(1300);\n}"
 
-    code += """\nvoid loop() {
+    code += """\nvoid loop() {"""
+
+    code += f"""
+    int start = millis();
+    
+    for (int i = 0; i < {num_keys}; i++) {{
+      curr_map[i] = base_map[i];
+      curr_map_sec[i] = base_map_sec[i];
+    }}
+"""
+
+    code +="""
 
     auto at_least_one_downed = false;
-    auto curr_map = base_map;
-    auto curr_map_sec = base_map_sec;
 
     bool process_seconday = false;
     //Serial.println(millis());
@@ -136,21 +148,22 @@ void setup() {
                 code += f"""if ({le_name}.primary_down()) {{"""
             else:
                 code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(at_least_one_downed)) {{"""
-            code += f"""
-            curr_map = {ln}_map;
-            curr_map_sec = {ln}_map_sec;
-}}
-"""
+
+            layer = layers.get(ln, {})
+            device_override = layer.get("device_override", None)
+            code += "; ".join([f"curr_map[{i}]="+keymap_to_indkeymap(k, device_override) for i, k in enumerate(make_state_map(layout_primary, "right", layer)[-1])]) + ";\n"
+            code += "; ".join([f"curr_map_sec[{i}]="+keymap_to_indkeymap(k, device_override) for i, k in enumerate(make_state_map(layout_secondary, "left", layer)[-1])]) + ";};\n"
+
     for suffix in ["", "_sec"]:
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
         code += f"if(curr_map{suffix}[i].primary.code != curr_map{suffix}[i].secondary) {{" + NL
-        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
+        code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
 
     for suffix in ["", "_sec"]:
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
         code += f"if(curr_map{suffix}[i].primary.code == curr_map{suffix}[i].secondary) {{" + NL
-        code += f"  trackers{suffix}[i].emit(&curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
+        code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
 
-    code += "\n}"
+    code += "\n Serial.println(((int)millis())-start);}"
 
     return code

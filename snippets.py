@@ -129,13 +129,13 @@ class KeyTracker {
   bool down_sent;
 
   bool currently_down();
-  IndKeyMap *_map;
+  IndKeyMap _map;
 public:
   unsigned long downed_at;
   KeyState state;
   KeyTracker();
   bool update(bool is_down);
-  void emit(IndKeyMap *map, bool at_least_one_downed);
+  void emit(IndKeyMap map, bool at_least_one_downed);
   unsigned long down_for();
   bool primary_down();
   bool long_down();
@@ -173,25 +173,25 @@ unsigned long KeyTracker::down_for() {
   return millis() - downed_at;
 }
 
-void KeyTracker::emit(IndKeyMap *map, bool at_least_one_downed) {
+void KeyTracker::emit(IndKeyMap map, bool at_least_one_downed) {
   if (!down_sent) {_map = map;}
-  if (_map->primary.code == _map->secondary || down_for() > HOLD_DELAY || down_sent) {
+  if (_map.primary.code == _map.secondary || down_for() > HOLD_DELAY || down_sent) {
     if (state == KeyState::KEY_UP_FROM_DOWN) {
-        release_gen(_map->primary.code, _map->primary.device, false);
+        release_gen(_map.primary.code, _map.primary.device, false);
         down_sent = false;
         return;
     }
     if (state == KeyState::KEY_DOWN_FROM_UP && !down_sent) {
-        press_gen(_map->primary.code, _map->primary.device, false);
+        press_gen(_map.primary.code, _map.primary.device, false);
         down_sent = true;
     }
   }
   if (state == KeyState::KEY_DOWN && (down_for() > HOLD_DELAY || at_least_one_downed) && !down_sent) {
-    press_gen(_map->primary.code, _map->primary.device, false);
+    press_gen(_map.primary.code, _map.primary.device, false);
     down_sent = true;
   }
-  if (down_for() <= HOLD_DELAY && _map->primary.code != _map->secondary && state == KeyState::KEY_UP_FROM_DOWN && !down_sent) {
-    release_gen(_map->secondary, Device::KEYBOARD, true);
+  if (down_for() <= HOLD_DELAY && _map.primary.code != _map.secondary && state == KeyState::KEY_UP_FROM_DOWN && !down_sent) {
+    release_gen(_map.secondary, Device::KEYBOARD, true);
   }
 }
 
