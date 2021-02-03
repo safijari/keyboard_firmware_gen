@@ -216,16 +216,16 @@ void KeyTracker::emit(IndKeyMap map, bool at_least_one_downed_after, bool at_lea
     press_gen(_map.primary.code, _map.primary.device, false);
     down_sent = true;
   }
-  if (down_for() <= HOLD_DELAY && _map.primary.code != _map.secondary && (state == KeyState::KEY_UP_FROM_DOWN || (state == KeyState::KEY_DOWN_FROM_UP && at_least_one_downed_before && is_printable(_map.secondary))) && !down_sent) {
-    if (at_least_one_downed_before) {
+  if (down_for() <= HOLD_DELAY && _map.primary.code != _map.secondary && (state == KeyState::KEY_UP_FROM_DOWN || (state == KeyState::KEY_DOWN_FROM_UP && at_least_one_downed_before)) && !down_sent) {
+    if (at_least_one_downed_before && is_printable(_map.secondary) && state == KeyState::KEY_DOWN_FROM_UP) {
       _picked_code = _map.secondary;
       _picked_device = Device::KEYBOARD;
       press_gen(_picked_code, _picked_device, false);
       down_sent = true;
-    } else {
+    } else if (state == KeyState::KEY_UP_FROM_DOWN) {
       release_gen(_map.secondary, Device::KEYBOARD, true);
     }
-  }
+}
 }
 
 bool KeyTracker::down_longer_than_others(bool at_least_one_downed_after) {
