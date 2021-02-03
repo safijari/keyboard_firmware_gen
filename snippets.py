@@ -3,6 +3,7 @@ preamble = """
 #include "Mouse.h"
 
 #define HOLD_DELAY 200
+#define DEBOUNCE_PERIOD 10
 
 """
 
@@ -132,6 +133,7 @@ enum KeyState: byte {
     KEY_UP,
     KEY_UP_FROM_DOWN,
     KEY_DOWN_FROM_UP,
+    KEY_DEBOUNCING,
     KEY_UNK
 };
 
@@ -161,7 +163,8 @@ bool KeyTracker::update(bool is_down) {
   if (was_down && state == KeyState::KEY_DOWN_FROM_UP) {state = KeyState::KEY_DOWN;}
   if (!was_down && state == KeyState::KEY_UP_FROM_DOWN) {state = KeyState::KEY_UP;}
 
-  if (!was_down && is_down) {state = KeyState::KEY_DOWN_FROM_UP; downed_at = millis();}
+  if (!was_down && is_down) {state = KeyState::KEY_DEBOUNCING; downed_at = millis();}
+  if (was_down && is_down && state == KeyState::KEY_DEBOUNCING && down_for() > DEBOUNCE_PERIOD) {state = KeyState::KEY_DOWN_FROM_UP;}
   if (was_down && !is_down) {state = KeyState::KEY_UP_FROM_DOWN;}
 
   was_down = is_down;

@@ -164,6 +164,6 @@ void setup() {
         code += f"if(curr_map{suffix}[i].primary.code == curr_map{suffix}[i].secondary) {{" + NL
         code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
 
-    code += "\n Serial.println(((int)millis())-start);}"
+    code += "\n }"
 
     return code

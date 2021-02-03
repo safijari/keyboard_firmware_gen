@@ -86,7 +86,7 @@ layout_left = {
 layout_right = {
     1: {1: "-", 2: "0", 3: "9", 4: "8", 5: "7", 6: "6",},
     2: {1: ["LAYER", "\\"], 2: "p", 3: "o", 4: "i", 5: "u", 6: "y",},
-    3: {1: ["KEY_RIGHT_GUI", "'"], 2: ";", 3: "l", 4: "k", 5: "j", 6: "h",},
+    3: {1: "'", 2: ";", 3: "l", 4: "k", 5: "j", 6: "h",},
     4: {1: "KEY_RIGHT_SHIFT", 2: "/", 3: ".", 4: ",", 5: "m", 6: "n",},
     5: {1: "LAYER", 2: "]", 3: "[", 4: "NO_OP", 5: "NO_OP",},
     6: {5: " ", 6: "KEY_RIGHT_CTRL",},
@@ -128,8 +128,8 @@ layers = {
             1: {1: "KEY_F12", 2: "KEY_F10", 3: "KEY_F9", 4: "KEY_F8", 5: "KEY_F7", 6: "KEY_F6"},
         },
     },
-    "tmuxi3": {
-        "key": {"half": "left", "key": [2, 1], "hold": True},
+    "i3": {
+        "key": {"half": "both", "key": [2, 1], "hold": True},
         "device_override": "SUPER_SHIFT",
         "map_left": {
         },
