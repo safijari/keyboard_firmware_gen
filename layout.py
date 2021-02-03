@@ -116,6 +116,10 @@ layers = {
                 4: {"device": "ALT", "code": "KEY_RIGHT_ARROW"},
                 3: {"device": "CTRL", "code": "KEY_RIGHT_ARROW"},
             },
+            5: {
+                5: {"device": "WHEEL", "code": "WHEEL_DOWN"},
+                4: {"device": "WHEEL", "code": "WHEEL_UP"},
+            }
         },
         "map_left": {},
     },

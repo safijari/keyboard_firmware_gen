@@ -4,6 +4,9 @@ preamble = """
 
 #define HOLD_DELAY 200
 #define DEBOUNCE_PERIOD 10
+#define WHEEL_UP 1
+#define WHEEL_DOWN -1
+#define WHEEL_SENSITIVITY 10
 
 """
 
@@ -15,6 +18,7 @@ enum Device: byte {
   ALT,
   SUPER_SHIFT,
   CTRL_B,
+  WHEEL,
   MOUSE,
   NONE,
 };
@@ -60,6 +64,10 @@ bool is_printable(char ch) {
 void press_gen(char ch, Device device, bool send_on_release) {
   if (ch == NO_OP) {return;}
   if (send_on_release) {return;}
+  if (device == Device::WHEEL) {
+    Mouse.move(0, 0, (int)ch*WHEEL_SENSITIVITY);
+    return;
+  }
   if (is_keyboard(device)) {
     if (device == Device::CTRL) {
         Keyboard.press(KEY_LEFT_CTRL);
@@ -85,6 +93,8 @@ void press_gen(char ch, Device device, bool send_on_release) {
 
 void release_gen(char ch, Device device, bool send_on_release) {
   if (ch == NO_OP) {return;}
+
+  if (device == Device::WHEEL) {return;}
   if (is_keyboard(device)) {
     if (!send_on_release) {
         if (device == Device::CTRL) {
