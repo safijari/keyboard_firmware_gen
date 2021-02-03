@@ -52,6 +52,11 @@ bool is_keyboard(Device device) {
 }
 
 
+bool is_printable(char ch) {
+    return ((int)ch > 31 && (int)ch < 128);
+}
+
+
 void press_gen(char ch, Device device, bool send_on_release) {
   if (ch == NO_OP) {return;}
   if (send_on_release) {return;}
@@ -66,7 +71,7 @@ void press_gen(char ch, Device device, bool send_on_release) {
         Keyboard.press(KEY_LEFT_GUI);
         Keyboard.press(KEY_LEFT_SHIFT);
     }
-    if (device == Device::CTRL_B && (int)ch > 31 && (int)ch < 128) {
+    if (device == Device::CTRL_B && is_printable(ch)) {
         Keyboard.press(KEY_LEFT_CTRL);
         Keyboard.write('b');
         Keyboard.release(KEY_LEFT_CTRL);
@@ -211,7 +216,7 @@ void KeyTracker::emit(IndKeyMap map, bool at_least_one_downed_after, bool at_lea
     press_gen(_map.primary.code, _map.primary.device, false);
     down_sent = true;
   }
-  if (down_for() <= HOLD_DELAY && _map.primary.code != _map.secondary && (state == KeyState::KEY_UP_FROM_DOWN || (state == KeyState::KEY_DOWN_FROM_UP && at_least_one_downed_before)) && !down_sent) {
+  if (down_for() <= HOLD_DELAY && _map.primary.code != _map.secondary && (state == KeyState::KEY_UP_FROM_DOWN || (state == KeyState::KEY_DOWN_FROM_UP && at_least_one_downed_before && is_printable(_map.secondary))) && !down_sent) {
     if (at_least_one_downed_before) {
       _picked_code = _map.secondary;
       _picked_device = Device::KEYBOARD;
