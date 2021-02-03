@@ -144,17 +144,19 @@ class KeyTracker {
 
   bool currently_down();
   IndKeyMap _map;
+  char _picked_code;
+  char _picked_device;
 public:
   unsigned long downed_at;
   KeyState state;
   KeyTracker();
   bool update(bool is_down);
-  void emit(IndKeyMap map, bool at_least_one_downed);
+  void emit(IndKeyMap map, bool at_least_one_downed_after, bool at_least_one_downed_before);
   unsigned long down_for();
   bool primary_down();
   bool long_down();
   bool up();
-  bool down_longer_than_others(bool at_least_one_downed);
+  bool down_longer_than_others(bool at_least_one_downed_after);
 };
 
 KeyTracker::KeyTracker() : state(KeyState::KEY_UP), downed_at(0), was_down(false), down_sent(false) {}
@@ -188,31 +190,42 @@ unsigned long KeyTracker::down_for() {
   return millis() - downed_at;
 }
 
-void KeyTracker::emit(IndKeyMap map, bool at_least_one_downed) {
+void KeyTracker::emit(IndKeyMap map, bool at_least_one_downed_after, bool at_least_one_downed_before=false) {
   if (!down_sent) {_map = map;}
   if (_map.primary.code == _map.secondary || down_for() > HOLD_DELAY || down_sent) {
     if (state == KeyState::KEY_UP_FROM_DOWN) {
-        release_gen(_map.primary.code, _map.primary.device, false);
+        release_gen(_picked_code, _picked_device, false);
         down_sent = false;
         return;
     }
     if (state == KeyState::KEY_DOWN_FROM_UP && !down_sent) {
+        _picked_code = _map.primary.code;
+        _picked_device = _map.primary.device;
         press_gen(_map.primary.code, _map.primary.device, false);
         down_sent = true;
     }
   }
-  if (state == KeyState::KEY_DOWN && (down_for() > HOLD_DELAY || at_least_one_downed) && !down_sent) {
+  if (state == KeyState::KEY_DOWN && (down_for() > HOLD_DELAY || at_least_one_downed_after) && !down_sent) {
+    _picked_code = _map.primary.code;
+    _picked_device = _map.primary.device;
     press_gen(_map.primary.code, _map.primary.device, false);
     down_sent = true;
   }
-  if (down_for() <= HOLD_DELAY && _map.primary.code != _map.secondary && state == KeyState::KEY_UP_FROM_DOWN && !down_sent) {
-    release_gen(_map.secondary, Device::KEYBOARD, true);
+  if (down_for() <= HOLD_DELAY && _map.primary.code != _map.secondary && (state == KeyState::KEY_UP_FROM_DOWN || (state == KeyState::KEY_DOWN_FROM_UP && at_least_one_downed_before)) && !down_sent) {
+    if (at_least_one_downed_before) {
+      _picked_code = _map.secondary;
+      _picked_device = Device::KEYBOARD;
+      press_gen(_picked_code, _picked_device, false);
+      down_sent = true;
+    } else {
+      release_gen(_map.secondary, Device::KEYBOARD, true);
+    }
   }
 }
 
-bool KeyTracker::down_longer_than_others(bool at_least_one_downed) {
+bool KeyTracker::down_longer_than_others(bool at_least_one_downed_after) {
   if (state == KeyState::KEY_DOWN_FROM_UP || this->up()) {return false;}
-  return at_least_one_downed;
+  return at_least_one_downed_after;
 }
 
 """

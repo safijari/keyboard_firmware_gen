@@ -102,7 +102,8 @@ void setup() {
 
     code +="""
 
-    auto at_least_one_downed = false;
+    auto at_least_one_downed_after = false;
+    auto at_least_one_downed_before = false;
 
     bool process_seconday = false;
     //Serial.println(millis());
@@ -132,7 +133,8 @@ void setup() {
 
     for tracker_name, state_name in zip(["trackers", "trackers_sec"], ["state", "state_sec"]):
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
-        code += f"  at_least_one_downed = (at_least_one_downed || {tracker_name}[i].update({state_name}[i] == '1'));{NL}}}" + NL
+        code += f"  at_least_one_downed_after = (at_least_one_downed_after || {tracker_name}[i].update({state_name}[i] == '1'));{NL}" + NL
+        code += f"  at_least_one_downed_before = (at_least_one_downed_before || ({tracker_name}[i].state == KeyState::KEY_DOWN));{NL}}}" + NL
 
     for ln, layer in layers.items():
         half = layer["key"]["half"]
@@ -147,7 +149,7 @@ void setup() {
             if not hold:
                 code += f"""if ({le_name}.primary_down()) {{"""
             else:
-                code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(at_least_one_downed)) {{"""
+                code += f"""if ({le_name}.long_down() || {le_name}.down_longer_than_others(at_least_one_downed_after)) {{"""
 
             layer = layers.get(ln, {})
             device_override = layer.get("device_override", None)
@@ -157,12 +159,13 @@ void setup() {
     for suffix in ["", "_sec"]:
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
         code += f"if(curr_map{suffix}[i].primary.code != curr_map{suffix}[i].secondary) {{" + NL
-        code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
+        code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i], at_least_one_downed_after, at_least_one_downed_before);{NL}}}}}" + NL
 
     for suffix in ["", "_sec"]:
         code += f"for (int i = 0; i < {num_keys}; i++) {{" + NL
         code += f"if(curr_map{suffix}[i].primary.code == curr_map{suffix}[i].secondary) {{" + NL
-        code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i], at_least_one_downed);{NL}}}}}" + NL
+        code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i], at_least_one_downed_after, at_least_one_downed_before);{NL}}}}}" + NL
+        
 
     code += "\n }"
 
