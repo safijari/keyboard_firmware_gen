@@ -99,12 +99,14 @@ layers = {
         "key": {"half": "left", "key": [7, 5], "hold": True},
         "map_right": {
             2: {
+                2: "-",
                 3: "KEY_END",
                 6: "KEY_HOME",
                 4: "KEY_PAGE_UP",
                 5: "KEY_PAGE_DOWN",
             },
             3: {
+                2: "_",
                 6: "KEY_LEFT_ARROW",
                 5: "KEY_DOWN_ARROW",
                 4: "KEY_UP_ARROW",
