@@ -106,20 +106,15 @@ void setup() {
     auto at_least_one_downed_before = false;
 
     bool process_seconday = false;
-    //Serial.println(millis());
     """
 
     code += f"""
     if (Serial1.available()) {{
         int tots = Serial1.readBytesUntil('{nl}', state_sec, {num_keys_sec} + 10);
         if (tots == {num_keys_sec}) {{
-            //Serial.println(tots);
-            //Serial.write(state_sec, tots);
-            //Serial.println();
             process_seconday = true;
         }}
         else {{
-            // Serial.println("miss");
         }}
     }}
     """
@@ -167,6 +162,6 @@ void setup() {
         code += f"  trackers{suffix}[i].emit(curr_map{suffix}[i], at_least_one_downed_after, at_least_one_downed_before);{NL}}}}}" + NL
         
 
-    code += "\n }"
+    code += "\n //Serial.println(process_seconday);\n}"
 
     return code

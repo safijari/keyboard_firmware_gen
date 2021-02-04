@@ -3,7 +3,7 @@ preamble = """
 #include "Mouse.h"
 
 #define HOLD_DELAY 200
-#define DEBOUNCE_PERIOD 10
+#define DEBOUNCE_PERIOD 7
 #define WHEEL_UP 1
 #define WHEEL_DOWN -1
 #define WHEEL_SENSITIVITY 10
