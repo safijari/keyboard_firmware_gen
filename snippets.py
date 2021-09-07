@@ -2,7 +2,7 @@ preamble = """
 #include "Keyboard.h"
 #include "Mouse.h"
 
-#define HOLD_DELAY 200
+#define HOLD_DELAY 150
 #define DEBOUNCE_PERIOD 7
 #define WHEEL_UP 1
 #define WHEEL_DOWN -1
